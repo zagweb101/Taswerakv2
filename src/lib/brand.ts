@@ -21,3 +21,6 @@ export const brandGradient = `linear-gradient(135deg, ${brand.gradient.from} 0%,
 export const brandGradientCss = `bg-[linear-gradient(135deg,#0A9ED9_0%,#00A3AA_50%,#D65221_100%)]`;
 
 export const brandTextGradient = `bg-[linear-gradient(135deg,#0A9ED9_0%,#00A3AA_50%,#D65221_100%)] bg-clip-text text-transparent`;
+
+// Alias — kept for convenience / naming preference
+export const brandGradientText = brandTextGradient;

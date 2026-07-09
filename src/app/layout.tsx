@@ -1,37 +1,47 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cairo, Tajawal } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { SessionProvider } from "next-auth/react";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const cairo = Cairo({
+  variable: "--font-cairo",
+  subsets: ["arabic", "latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const tajawal = Tajawal({
+  variable: "--font-tajawal",
+  weight: ["300", "400", "500", "700", "800"],
+  subsets: ["arabic", "latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Z.ai Code Scaffold - AI-Powered Development",
-  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
+  title: "تصويرك | Taswerak",
+  description:
+    "منصة تصويرك لتعلّم التصوير الفوتوغرافي من الصفر للاحتراف — جدة، السعودية. دورات في أساسيات التصوير، تصوير البيوتي، وميكب توتوريال.",
+  keywords: [
+    "تصويرك",
+    "Taswerak",
+    "تصوير فوتوغرافي",
+    "دورات تصوير",
+    "جدة",
+    "تصوير البيوتي",
+    "ميكب توتوريال",
+    "أحمد زغلول",
+  ],
+  authors: [{ name: "Ahmed Zaghloul" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.svg",
   },
   openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    title: "تصويرك | Taswerak",
+    description: "تعلّم التصوير الفوتوغرافي من الصفر للاحتراف",
+    siteName: "تصويرك",
     type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
+    locale: "ar_SA",
   },
 };
 
@@ -41,12 +51,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${cairo.variable} ${tajawal.variable} antialiased bg-background text-foreground font-tajawal`}
+        style={{ fontFamily: "var(--font-tajawal), system-ui, sans-serif" }}
       >
-        {children}
+        <SessionProvider>{children}</SessionProvider>
         <Toaster />
+        <SonnerToaster position="top-center" dir="rtl" />
       </body>
     </html>
   );

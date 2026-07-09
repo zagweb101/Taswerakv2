@@ -8,7 +8,7 @@
 // ====================================================================
 
 import { PrismaClient, Role, CourseLevel, CourseStatus } from "@prisma/client";
-import argon2 from "argon2";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -20,7 +20,7 @@ async function main() {
   const instructorEmail = "ahmed@taswerak.com";
   const studentEmail = "student@taswerak.com";
 
-  const passwordHash = await argon2.hash("Password123!");
+  const passwordHash = await bcrypt.hash("Password123!", 12);
 
   const admin = await prisma.user.upsert({
     where: { email: adminEmail },
