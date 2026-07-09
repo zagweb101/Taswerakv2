@@ -1,0 +1,65 @@
+# ====================================================================
+# Taswerak — local development stack (PostgreSQL + MinIO)
+# Usage:  docker compose up -d
+# Stop:   docker compose down
+# Reset:  docker compose down -v
+# ====================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: taswerak_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: taswerak
+      POSTGRES_PASSWORD: taswerak
+      POSTGRES_DB: taswerak
+      TZ: Asia/Riyadh
+    ports:
+      - "5432:5432"
+    volumes:
+      - taswerak_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taswerak -d taswerak"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: taswerak_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: taswerak_minio
+      MINIO_ROOT_PASSWORD: taswerak_minio_secret
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web console
+    volumes:
+      - taswerak_minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auto-create the uploads bucket on first run
+  minio_init:
+    image: minio/mc:latest
+    container_name: taswerak_minio_init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 taswerak_minio taswerak_minio_secret;
+      mc mb --ignore-existing local/taswerak-uploads;
+      mc anonymous set download local/taswerak-uploads;
+      echo '✅ bucket ready';
+      exit 0;
+      "
+
+volumes:
+  taswerak_pg_data:
+  taswerak_minio_data:
