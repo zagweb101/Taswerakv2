@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { User, Lock, Bell, Globe, Palette, Shield, Loader2 } from "lucide-react";
+import { User, Lock, Bell, Shield, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Card,
@@ -16,37 +16,61 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useSettings } from "@/hooks/use-settings";
+
+interface StudentSettings {
+  profile: {
+    name: string;
+    email: string;
+    phone: string;
+    bio: string;
+    avatarUrl: string | null;
+  };
+  notifications: {
+    emailPayments: boolean;
+    emailCritiques: boolean;
+    emailCourses: boolean;
+    smsNotifications: boolean;
+  };
+  privacy: { publicProfile: boolean };
+}
 
 export default function StudentSettingsPage() {
-  const [saving, setSaving] = useState(false);
+  const { settings, loading, saving, saveSection } = useSettings<StudentSettings>({
+    endpoint: "/api/student/settings",
+  });
+
+  // Editable profile fields (synced from API response)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [bio, setBio] = useState("");
+  const [profileLoaded, setProfileLoaded] = useState(false);
+
   const [currentPwd, setCurrentPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
-  const [prefs, setPrefs] = useState({
-    emailPayments: true,
-    emailCritiques: true,
-    emailCourses: false,
-    smsNotifications: false,
-    publicProfile: true,
-  });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPwd, setSavingPwd] = useState(false);
+  const [savingPrefs, setSavingPrefs] = useState(false);
 
-  const updatePref = (key: keyof typeof prefs) => (v: boolean) =>
-    setPrefs((p) => ({ ...p, [key]: v }));
+  // Sync settings → local state ONCE when first loaded
+  if (settings?.profile && !profileLoaded) {
+    setName(settings.profile.name || "");
+    setEmail(settings.profile.email || "");
+    setPhone(settings.profile.phone || "");
+    setBio(settings.profile.bio || "");
+    setProfileLoaded(true);
+  }
 
-  const saveProfile = (e: React.FormEvent) => {
+  const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      toast.success("تم حفظ الملف الشخصي");
-    }, 600);
+    setSavingProfile(true);
+    await saveSection("profile", { name, email, phone, bio });
+    setSavingProfile(false);
   };
 
-  const savePassword = (e: React.FormEvent) => {
+  const savePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPwd !== confirmPwd) {
       toast.error("كلمتا المرور غير متطابقتين");
@@ -56,23 +80,58 @@ export default function StudentSettingsPage() {
       toast.error("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
       return;
     }
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    setSavingPwd(true);
+    const ok = await saveSection("password", {
+      currentPassword: currentPwd,
+      newPassword: newPwd,
+    });
+    if (ok) {
       setCurrentPwd("");
       setNewPwd("");
       setConfirmPwd("");
-      toast.success("تم تحديث كلمة المرور");
-    }, 600);
+    }
+    setSavingPwd(false);
   };
+
+  const updateNotification = (key: keyof NonNullable<typeof settings>["notifications"]) => async (v: boolean) => {
+    if (!settings) return;
+    const updated = { ...settings.notifications, [key]: v };
+    setSavingPrefs(true);
+    await saveSection("notifications", updated);
+    setSavingPrefs(false);
+  };
+
+  const updatePrivacy = (key: keyof NonNullable<typeof settings>["privacy"]) => async (v: boolean) => {
+    if (!settings) return;
+    const updated = { ...settings.privacy, [key]: v };
+    await saveSection("privacy", updated);
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 max-w-3xl">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold">الإعدادات</h1>
+          <p className="text-muted-foreground mt-1">جارٍ التحميل...</p>
+        </div>
+        {[...Array(3)].map((_, i) => (
+          <Card key={i} className="rounded-2xl border-border/60">
+            <CardContent className="p-6">
+              <div className="h-6 w-1/3 skeleton-shimmer rounded-lg mb-4" />
+              <div className="h-10 w-full skeleton-shimmer rounded-lg mb-3" />
+              <div className="h-10 w-full skeleton-shimmer rounded-lg" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold">الإعدادات</h1>
-        <p className="text-muted-foreground mt-1">
-          اضبط ملفك الشخصي وتفضيلاتك
-        </p>
+        <p className="text-muted-foreground mt-1">اضبط ملفك الشخصي وتفضيلاتك</p>
       </div>
 
       {/* Profile */}
@@ -104,25 +163,25 @@ export default function StudentSettingsPage() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">الاسم الكامل</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="rounded-xl" placeholder="اسمك الكامل" />
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="rounded-xl" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">البريد الإلكتروني</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl" placeholder="you@example.com" />
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">رقم الجوال</Label>
-                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-xl" placeholder="+9665xxxxxxxx" />
+                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-xl" />
               </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="bio">نبذة عنك</Label>
-                <Input id="bio" value={bio} onChange={(e) => setBio(e.target.value)} className="rounded-xl" placeholder="مصورة هواة مهتمة بتصوير البيوتي" />
+                <Input id="bio" value={bio} onChange={(e) => setBio(e.target.value)} className="rounded-xl" />
               </div>
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" disabled={saving} className="rounded-xl brand-gradient text-white hover:opacity-90">
-                {saving && <Loader2 className="h-4 w-4 animate-spin ml-1" />}
+              <Button type="submit" disabled={savingProfile} className="rounded-xl brand-gradient text-white hover:opacity-90">
+                {savingProfile && <Loader2 className="h-4 w-4 animate-spin ml-1" />}
                 حفظ التغييرات
               </Button>
             </div>
@@ -160,8 +219,8 @@ export default function StudentSettingsPage() {
               </div>
             </div>
             <div className="flex justify-end">
-              <Button type="submit" disabled={saving} variant="outline" className="rounded-xl">
-                {saving && <Loader2 className="h-4 w-4 animate-spin ml-1" />}
+              <Button type="submit" disabled={savingPwd} variant="outline" className="rounded-xl">
+                {savingPwd && <Loader2 className="h-4 w-4 animate-spin ml-1" />}
                 تحديث كلمة المرور
               </Button>
             </div>
@@ -183,13 +242,13 @@ export default function StudentSettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <PrefRow title="تحديثات المدفوعات" desc="اعتماد أو رفض إيصالاتك" checked={prefs.emailPayments} onCheck={updatePref("emailPayments")} />
+          <PrefRow title="تحديثات المدفوعات" desc="اعتماد أو رفض إيصالاتك" checked={settings?.notifications.emailPayments ?? true} onCheck={updateNotification("emailPayments")} disabled={savingPrefs} />
           <Separator />
-          <PrefRow title="نقد الأعمال" desc="عندما يردّ المدرّب على أعمالك" checked={prefs.emailCritiques} onCheck={updatePref("emailCritiques")} />
+          <PrefRow title="نقد الأعمال" desc="عندما يردّ المدرّب على أعمالك" checked={settings?.notifications.emailCritiques ?? true} onCheck={updateNotification("emailCritiques")} disabled={savingPrefs} />
           <Separator />
-          <PrefRow title="دورات جديدة" desc="إشعارات عند إطلاق دورات جديدة" checked={prefs.emailCourses} onCheck={updatePref("emailCourses")} />
+          <PrefRow title="دورات جديدة" desc="إشعارات عند إطلاق دورات جديدة" checked={settings?.notifications.emailCourses ?? false} onCheck={updateNotification("emailCourses")} disabled={savingPrefs} />
           <Separator />
-          <PrefRow title="إشعارات SMS" desc="رسائل نصية للأحداث المهمة" checked={prefs.smsNotifications} onCheck={updatePref("smsNotifications")} />
+          <PrefRow title="إشعارات SMS" desc="رسائل نصية للأحداث المهمة" checked={settings?.notifications.smsNotifications ?? false} onCheck={updateNotification("smsNotifications")} disabled={savingPrefs} />
         </CardContent>
       </Card>
 
@@ -210,8 +269,9 @@ export default function StudentSettingsPage() {
           <PrefRow
             title="ملف شخصي عام"
             desc="السماح للآخرين برؤية ملفك وشهاداتك"
-            checked={prefs.publicProfile}
-            onCheck={updatePref("publicProfile")}
+            checked={settings?.privacy.publicProfile ?? true}
+            onCheck={updatePrivacy("publicProfile")}
+            disabled={saving}
           />
         </CardContent>
       </Card>
@@ -224,11 +284,13 @@ function PrefRow({
   desc,
   checked,
   onCheck,
+  disabled,
 }: {
   title: string;
   desc: string;
   checked: boolean;
   onCheck: (v: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
@@ -236,7 +298,7 @@ function PrefRow({
         <div className="font-medium text-sm">{title}</div>
         <div className="text-xs text-muted-foreground mt-0.5">{desc}</div>
       </div>
-      <Switch checked={checked} onCheckedChange={onCheck} />
+      <Switch checked={checked} onCheckedChange={onCheck} disabled={disabled} />
     </div>
   );
 }

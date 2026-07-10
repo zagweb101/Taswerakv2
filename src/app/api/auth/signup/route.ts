@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { rateLimitPresets, getClientIP } from "@/lib/services/rate-limit";
 
 const schema = z.object({
   name: z.string().min(2, "الاسم قصير جداً"),
@@ -17,6 +18,16 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   try {
+    // Rate limit: 5 signups per hour per IP
+    const ip = getClientIP(req);
+    const rl = rateLimitPresets.signup(ip);
+    if (!rl.success) {
+      return NextResponse.json(
+        { ok: false, error: "محاولات كثيرة. حاول مرة أخرى بعد ساعة." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     const body = await req.json();
     const parsed = schema.safeParse(body);
     if (!parsed.success) {

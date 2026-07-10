@@ -7,6 +7,7 @@ import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { brandGradientText } from "@/lib/brand";
 import { cn } from "@/lib/utils";
+import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 
 export interface NavItem {
   href: string;
@@ -21,6 +22,10 @@ export interface DashboardShellProps {
   navItems: NavItem[];
   userName?: string | null;
   userEmail?: string | null;
+  /** ID of user being impersonated (admin in their session) — shows banner */
+  impersonatedTargetId?: string | null;
+  /** Name of user being impersonated */
+  impersonatedTargetName?: string | null;
   children: ReactNode;
 }
 
@@ -30,12 +35,21 @@ export function DashboardShell({
   navItems,
   userName,
   userEmail,
+  impersonatedTargetId,
+  impersonatedTargetName,
   children,
 }: DashboardShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-bl from-muted/30 to-background">
+      {/* Impersonation banner — only shown when admin is impersonating */}
+      {impersonatedTargetId && impersonatedTargetName && (
+        <ImpersonationBanner
+          targetId={impersonatedTargetId}
+          targetName={impersonatedTargetName}
+        />
+      )}
       {/* Top bar (mobile) */}
       <header className="lg:hidden sticky top-0 z-40 glass border-b border-border/40 px-4 h-14 flex items-center justify-between">
         <Link href={`/${role}`} className="flex items-center gap-2">

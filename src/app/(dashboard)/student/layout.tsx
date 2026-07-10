@@ -14,6 +14,9 @@ export default async function StudentLayout({
     redirect(`/${session.user.role.toLowerCase()}`);
   }
 
+  // Check if admin is impersonating this student
+  const impersonatedBy = (session.user as any).impersonatedBy as string | undefined;
+
   return (
     <DashboardShell
       role="student"
@@ -21,6 +24,8 @@ export default async function StudentLayout({
       navItems={studentNav}
       userName={session.user.name}
       userEmail={session.user.email}
+      impersonatedTargetId={impersonatedBy ? session.user.id : null}
+      impersonatedTargetName={impersonatedBy ? session.user.name : null}
     >
       {children}
     </DashboardShell>

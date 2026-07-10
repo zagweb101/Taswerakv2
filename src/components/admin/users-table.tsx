@@ -66,6 +66,11 @@ export function UsersTable({
   });
 
   const impersonate = (u: User) => {
+    // Don't impersonate admins (server-side also rejects)
+    if (u.role === "ADMIN") {
+      toast.error("لا يمكن انتحال مدير");
+      return;
+    }
     startTransition(async () => {
       try {
         const res = await fetch(`/api/admin/users/${u.id}/impersonate`, {
@@ -76,12 +81,12 @@ export function UsersTable({
           throw new Error(data.error || "فشل الانتحال");
         }
         toast.success(`تم تسجيل الدخول نيابةً عن ${u.name || "المستخدم"}`);
-        // In production: redirect to user's dashboard
+        // API has issued new session → redirect to target's dashboard
         if (data.target?.role) {
           const targetRole = data.target.role.toLowerCase();
           setTimeout(() => {
             window.location.href = `/${targetRole}`;
-          }, 800);
+          }, 500);
         }
       } catch (err: any) {
         toast.error(err.message || "فشل الانتحال");
@@ -200,7 +205,7 @@ export function UsersTable({
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => impersonate(u)}
-                            disabled={isSelf || pending}
+                            disabled={isSelf || pending || u.role === "ADMIN"}
                             title="دخول نيابةً"
                             className="h-8 w-8 rounded-lg hover:bg-[#0A9ED9]/10 hover:text-[#0A9ED9] flex items-center justify-center text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                           >
