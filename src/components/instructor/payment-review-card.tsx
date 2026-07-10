@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRouter } from "next/navigation";
 import {
   Wallet,
   CheckCircle2,
   XCircle,
   Loader2,
   Eye,
-  User,
   Calendar,
   Banknote,
 } from "lucide-react";
@@ -21,7 +20,6 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PaymentStatusBadge } from "@/components/dashboard/status-badges";
@@ -41,19 +39,38 @@ interface Receipt {
 }
 
 export function PaymentReviewCard({ receipt }: { receipt: Receipt }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [reason, setReason] = useState("");
 
-  const decide = (action: "APPROVE" | "REJECT", body?: { rejectionReason: string }) => {
+  const decide = (action: "APPROVE" | "REJECT") => {
     startTransition(async () => {
-      await new Promise((r) => setTimeout(r, 600));
-      if (action === "APPROVE") {
-        toast.success(`تم اعتماد دفعة ${receipt.student.name || "الطالب"}`);
-      } else {
-        toast.success(`تم رفض الدفعة`);
-        setRejectOpen(false);
-        setReason("");
+      try {
+        const res = await fetch(`/api/instructor/payments/${receipt.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            action === "APPROVE"
+              ? { action }
+              : { action, rejectionReason: reason }
+          ),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "فشل الإجراء");
+        }
+
+        if (action === "APPROVE") {
+          toast.success(`تم اعتماد دفعة ${receipt.student.name || "الطالب"}`);
+        } else {
+          toast.success("تم رفض الدفعة وإشعار الطالب");
+          setRejectOpen(false);
+          setReason("");
+        }
+        router.refresh();
+      } catch (err: any) {
+        toast.error(err.message || "فشل الإجراء");
       }
     });
   };
@@ -184,7 +201,7 @@ export function PaymentReviewCard({ receipt }: { receipt: Receipt }) {
                     <Button
                       className="rounded-xl flex-1 bg-red-600 hover:bg-red-700 text-white"
                       disabled={pending || !reason.trim()}
-                      onClick={() => decide("REJECT", { rejectionReason: reason })}
+                      onClick={() => decide("REJECT")}
                     >
                       {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
                       تأكيد الرفض

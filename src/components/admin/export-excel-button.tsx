@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Download, Loader2, FileSpreadsheet } from "lucide-react";
+import { Download, Loader2, FileSpreadsheet, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,9 +29,29 @@ export function ExportExcelButton() {
 
   const doExport = () => {
     startTransition(async () => {
-      await new Promise((r) => setTimeout(r, 800));
-      toast.success("تم إنشاء ملف Excel — سيبدأ التحميل");
-      setOpen(false);
+      try {
+        const url = `/api/admin/finance/export?range=${range}&status=${status}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "فشل التصدير");
+        }
+        // Trigger download
+        const blob = await res.blob();
+        const dlUrl = URL.createObjectURL(blob);
+        const a = window.document.createElement("a");
+        a.href = dlUrl;
+        a.download = `taswerak-finance-${range}-${status}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+        window.document.body.appendChild(a);
+        a.click();
+        window.document.body.removeChild(a);
+        URL.revokeObjectURL(dlUrl);
+
+        toast.success("تم تصدير ملف Excel بنجاح");
+        setOpen(false);
+      } catch (err: any) {
+        toast.error(err.message || "فشل التصدير");
+      }
     });
   };
 
@@ -84,7 +104,10 @@ export function ExportExcelButton() {
           </div>
 
           <div className="p-3 rounded-xl bg-muted/40 text-xs">
-            <div className="font-medium mb-1">سيحتوي الملف على:</div>
+            <div className="font-medium mb-1 flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3 text-[#00A3AA]" />
+              سيحتوي الملف على:
+            </div>
             <ul className="text-muted-foreground space-y-0.5">
               <li>• اسم الطالب + بريده</li>
               <li>• اسم الدورة + المدرّب</li>

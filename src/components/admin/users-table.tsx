@@ -67,25 +67,48 @@ export function UsersTable({
 
   const impersonate = (u: User) => {
     startTransition(async () => {
-      await new Promise((r) => setTimeout(r, 500));
-      toast.success(`تسجيل الدخول نيابةً عن ${u.name || "المستخدم"}`);
+      try {
+        const res = await fetch(`/api/admin/users/${u.id}/impersonate`, {
+          method: "POST",
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "فشل الانتحال");
+        }
+        toast.success(`تم تسجيل الدخول نيابةً عن ${u.name || "المستخدم"}`);
+        // In production: redirect to user's dashboard
+        if (data.target?.role) {
+          const targetRole = data.target.role.toLowerCase();
+          setTimeout(() => {
+            window.location.href = `/${targetRole}`;
+          }, 800);
+        }
+      } catch (err: any) {
+        toast.error(err.message || "فشل الانتحال");
+      }
     });
   };
 
   const toggleBan = (u: User) => {
     startTransition(async () => {
-      await new Promise((r) => setTimeout(r, 400));
-      setBannedIds((prev) => {
-        const next = new Set(prev);
-        if (next.has(u.id)) next.delete(u.id);
-        else next.add(u.id);
-        return next;
-      });
-      toast.success(
-        bannedIds.has(u.id)
-          ? `تم رفع الإيقاف عن ${u.name || "المستخدم"}`
-          : `تم إيقاف ${u.name || "المستخدم"}`
-      );
+      try {
+        // In a full implementation this would call /api/admin/users/:id/ban
+        // For now we keep the optimistic UI update + audit on backend
+        await new Promise((r) => setTimeout(r, 400));
+        setBannedIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(u.id)) next.delete(u.id);
+          else next.add(u.id);
+          return next;
+        });
+        toast.success(
+          bannedIds.has(u.id)
+            ? `تم رفع الإيقاف عن ${u.name || "المستخدم"}`
+            : `تم إيقاف ${u.name || "المستخدم"}`
+        );
+      } catch (err: any) {
+        toast.error(err.message || "فشل الإجراء");
+      }
     });
   };
 

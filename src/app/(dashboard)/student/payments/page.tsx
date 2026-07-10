@@ -49,18 +49,37 @@ export default async function StudentPaymentsPage() {
   if (!session?.user?.id) return null;
 
   let receipts: any[] = [];
+  let availableCourses: any[] = [];
   try {
-    receipts = await db.paymentReceipt.findMany({
-      where: { studentId: session.user.id },
-      include: {
-        enrollment: {
-          select: { course: { select: { titleAr: true, title: true } } },
+    [receipts, availableCourses] = await Promise.all([
+      db.paymentReceipt.findMany({
+        where: { studentId: session.user.id },
+        include: {
+          enrollment: {
+            select: { course: { select: { titleAr: true, title: true } } },
+          },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+      }),
+      db.course.findMany({
+        where: { status: "PUBLISHED" },
+        select: {
+          id: true,
+          titleAr: true,
+          title: true,
+          price: true,
+          currency: true,
+        },
+        orderBy: [{ isFeatured: "desc" }, { createdAt: "asc" }],
+      }),
+    ]);
   } catch {
     receipts = mockReceipts;
+    availableCourses = [
+      { id: "c1", titleAr: "أساسيات التصوير", title: "Fundamentals", price: 499, currency: "SAR" },
+      { id: "c2", titleAr: "تصوير البيوتي Beauty", title: "Beauty", price: 899, currency: "SAR" },
+      { id: "c3", titleAr: "ميكب توتوريال", title: "Makeup", price: 599, currency: "SAR" },
+    ];
   }
 
   const pending = receipts.filter((r) => r.status === "PENDING");
@@ -72,7 +91,7 @@ export default async function StudentPaymentsPage() {
       <DashboardPageHeader
         title="إيصالات الدفع"
         description="ارفع إيصالات التحويل البنكي وتابع حالة اعتمادها"
-        actions={<UploadReceiptDialog />}
+        actions={<UploadReceiptDialog courses={availableCourses} />}
       />
 
       {/* Stats */}
