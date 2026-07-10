@@ -33,6 +33,7 @@ yarn-error.log*
 # env files (keep .env.example tracked as template, ignore everything else)
 .env*
 !.env.example
+.env.production
 
 # vercel
 .vercel

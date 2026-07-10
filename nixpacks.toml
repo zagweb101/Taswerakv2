@@ -1,0 +1,25 @@
+# ====================================================================
+# Nixpacks config for Coolify
+# Tells Coolify how to build + start the app if not using Dockerfile directly.
+# ====================================================================
+
+[phases.setup]
+nixPkgs = ["bun", "openssl"]
+
+[phases.install]
+cmds = ["bun install --frozen-lockfile"]
+
+[phases.build]
+cmds = [
+    "bunx prisma generate",
+    "bun run build"
+]
+
+[start]
+cmd = "bunx prisma migrate deploy && bun .next/standalone/server.js"
+
+[variables]
+NODE_ENV = "production"
+HOSTNAME = "0.0.0.0"
+PORT = "3000"
+NEXT_TELEMETRY_DISABLED = "1"
