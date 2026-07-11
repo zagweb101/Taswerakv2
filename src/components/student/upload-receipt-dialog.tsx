@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Upload, Loader2, X, FileImage, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -34,6 +35,7 @@ interface Course {
 export function UploadReceiptDialog({ courses }: { courses?: Course[] }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -123,7 +125,7 @@ export function UploadReceiptDialog({ courses }: { courses?: Course[] }) {
             notes: "",
           });
           // Refresh server data
-          window.location.reload();
+          router.refresh();
         }, 1500);
       } catch (err: any) {
         toast.error(err.message || "فشل رفع الإيصال");

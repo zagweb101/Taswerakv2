@@ -26,6 +26,7 @@ export default async function SubmitAssignmentPage({ params }: PageProps) {
 
   let assignment: any = null;
   let existingSubmission: any = null;
+  let enrollmentId: string | null = null;
   let notEnrolled = false;
   let dbError = false;
 
@@ -53,6 +54,7 @@ export default async function SubmitAssignmentPage({ params }: PageProps) {
     if (!enrollment || enrollment.status !== "ACTIVE") {
       notEnrolled = true;
     } else {
+      enrollmentId = enrollment.id;
       // Get existing submission (most recent)
       existingSubmission = await db.submission.findFirst({
         where: {
@@ -183,7 +185,7 @@ export default async function SubmitAssignmentPage({ params }: PageProps) {
       {canResubmit ? (
         <SubmissionForm
           assignmentId={assignment.id}
-          enrollmentId={assignment.courseId /* placeholder */}
+          enrollmentId={enrollmentId || ""}
           lessonId={assignment.lessonId}
           studentId={session.user.id}
           existingSubmission={existingSubmission}

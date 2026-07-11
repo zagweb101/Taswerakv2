@@ -13,6 +13,7 @@ import bcrypt from "bcryptjs";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { writeAudit } from "@/lib/services/audit";
+import { rateLimitPresets, getClientIP } from "@/lib/services/rate-limit";
 
 const memoryStore = new Map<string, any>();
 
@@ -164,6 +165,15 @@ export async function PUT(req: NextRequest) {
     } else if (section === "privacy" && privacy) {
       newSettings.privacy = privacy;
     } else if (section === "password" && password) {
+      // Rate limit password changes: 5 per hour per IP
+      const ip = getClientIP(req);
+      const rl = rateLimitPresets.passwordChange(ip);
+      if (!rl.success) {
+        return NextResponse.json(
+          { ok: false, error: "محاولات كثيرة. حاول بعد ساعة." },
+          { status: 429 }
+        );
+      }
       try {
         const user = await db.user.findUnique({
           where: { id: session.user.id },

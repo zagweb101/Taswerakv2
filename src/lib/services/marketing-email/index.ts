@@ -27,7 +27,7 @@ export async function sendMarketingEmail({ to, studentName, template, data }: Ma
   return sendEmail({
     to,
     subject: payload.subject,
-    templateId: template as any,
+    templateId: "WELCOME",
     data: { studentName, ...data },
     text: payload.text,
     html: payload.html,

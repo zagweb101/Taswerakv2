@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, MessageSquare, Loader2, Clock, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,6 +46,7 @@ const categoryMap: Record<string, string> = {
 
 export function SupportTicketList({ tickets, dbError }: { tickets: Ticket[]; dbError: boolean }) {
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     subject: "",
@@ -70,7 +72,7 @@ export function SupportTicketList({ tickets, dbError }: { tickets: Ticket[]; dbE
         toast.success(data.message);
         setOpen(false);
         setForm({ subject: "", body: "", category: "GENERAL", priority: "NORMAL" });
-        setTimeout(() => window.location.reload(), 1000);
+        setTimeout(() => router.refresh(), 1000);
       } catch (err: any) {
         toast.error(err.message);
       }

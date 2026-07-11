@@ -75,17 +75,36 @@ export function CouponsManager({ initialCoupons, dbError }: { initialCoupons: Co
 
   const toggle = (id: string, isActive: boolean) => {
     startTransition(async () => {
-      // Optimistic
-      setCoupons(coupons.map((c) => c.id === id ? { ...c, isActive: !isActive } : c));
-      // TODO: real API call
-      toast.success(isActive ? "تم إيقاف الكوبون" : "تم تفعيل الكوبون");
+      try {
+        setCoupons(coupons.map((c) => c.id === id ? { ...c, isActive: !isActive } : c));
+        const res = await fetch(`/api/coupons/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isActive: !isActive }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error || "فشل التحديث");
+        toast.success(isActive ? "تم إيقاف الكوبون" : "تم تفعيل الكوبون");
+      } catch (err: any) {
+        setCoupons(coupons.map((c) => c.id === id ? { ...c, isActive } : c));
+        toast.error(err.message);
+      }
     });
   };
 
   const remove = (id: string) => {
     if (!confirm("حذف هذا الكوبون؟")) return;
-    setCoupons(coupons.filter((c) => c.id !== id));
-    toast.success("تم حذف الكوبون");
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/coupons/${id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error || "فشل الحذف");
+        setCoupons(coupons.filter((c) => c.id !== id));
+        toast.success("تم حذف الكوبون");
+      } catch (err: any) {
+        toast.error(err.message);
+      }
+    });
   };
 
   if (dbError) {

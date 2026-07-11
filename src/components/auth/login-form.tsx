@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-export function LoginForm() {
+function LoginFormInner() {
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") || "/";
@@ -129,5 +129,19 @@ export function LoginForm() {
         </form>
       </CardContent>
     </Card>
+  );
+}
+
+export function LoginForm() {
+  return (
+    <Suspense fallback={
+      <Card className="w-full max-w-md glass border-white/40 shadow-xl rounded-2xl">
+        <CardContent className="p-10 flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    }>
+      <LoginFormInner />
+    </Suspense>
   );
 }

@@ -19,7 +19,7 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIP(req);
-    const rl = rateLimitPresets.signup(ip); // 5/hr per IP
+    const rl = rateLimitPresets.forgotPassword(ip);
     if (!rl.success) {
       return NextResponse.json(
         { ok: false, error: "محاولات كثيرة. حاول بعد ساعة." },
@@ -49,6 +49,10 @@ export async function POST(req: NextRequest) {
       const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
       // Store token in VerificationToken table (Auth.js standard)
+      // First, delete old tokens for this email to prevent accumulation
+      await db.verificationToken.deleteMany({
+        where: { identifier: email },
+      });
       await db.verificationToken.create({
         data: {
           identifier: email,
@@ -86,7 +90,7 @@ ${resetUrl}
   <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 16px 16px;">
     <h1 style="color: #0A9ED9; margin-top: 0;">إعادة تعيين كلمة المرور</h1>
     <p style="color: #374151; line-height: 1.7;">
-      أهلاً <strong>${user.name || ""}</strong>،
+      أهلاً <strong>${(user.name || "").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</strong>،
     </p>
     <p style="color: #374151; line-height: 1.7;">
       تلقّينا طلباً لإعادة تعيين كلمة المرور لحسابك. اضغط الزر التالي

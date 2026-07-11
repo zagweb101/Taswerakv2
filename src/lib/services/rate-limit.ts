@@ -105,6 +105,12 @@ export const rateLimitPresets = {
   signup: (ip: string) => rateLimit({ key: `signup:${ip}`, limit: 5, windowMs: 60 * 60 * 1000 }),
   /** 10 login attempts per minute per IP */
   login: (ip: string) => rateLimit({ key: `login:${ip}`, limit: 10, windowMs: 60 * 1000 }),
+  /** 3 contact messages per hour per IP */
+  contact: (ip: string) => rateLimit({ key: `contact:${ip}`, limit: 3, windowMs: 60 * 60 * 1000 }),
+  /** 3 forgot-password requests per hour per IP */
+  forgotPassword: (ip: string) => rateLimit({ key: `forgotpwd:${ip}`, limit: 3, windowMs: 60 * 60 * 1000 }),
+  /** 3 password changes per hour per IP */
+  passwordChange: (ip: string) => rateLimit({ key: `pwdchange:${ip}`, limit: 3, windowMs: 60 * 60 * 1000 }),
   /** 20 payment uploads per hour per user */
   paymentUpload: (userId: string) => rateLimit({ key: `payupload:${userId}`, limit: 20, windowMs: 60 * 60 * 1000 }),
   /** 3 finance exports per hour per admin */

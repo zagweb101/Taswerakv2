@@ -3,9 +3,11 @@
 import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 export function MarkReadButton({ notificationId }: { notificationId: string }) {
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <button
@@ -18,7 +20,7 @@ export function MarkReadButton({ notificationId }: { notificationId: string }) {
             const data = await res.json();
             if (res.ok && data.ok) {
               toast.success("تم تعليم الإشعار كمقروء");
-              window.location.reload();
+              router.refresh();
             } else {
               throw new Error(data.error || "فشل");
             }

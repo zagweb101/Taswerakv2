@@ -64,6 +64,12 @@ export async function POST(req: NextRequest) {
 
     const finalAmount = Math.max(0, amount - discount);
 
+    // Increment usage count
+    await db.coupon.update({
+      where: { code },
+      data: { usedCount: { increment: 1 } },
+    });
+
     return NextResponse.json({
       ok: true,
       coupon: {

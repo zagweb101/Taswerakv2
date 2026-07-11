@@ -118,7 +118,7 @@ function StatCard({
       <CardContent className="p-4">
         <div className={`mb-2 ${iconColor}`}>{icon}</div>
         <div className="text-2xl lg:text-3xl font-bold">
-          {isCurrency ? value.toLocaleString("ar-SA") : value.toLocaleString("ar-SA")}
+          {isCurrency ? `${Number(value).toLocaleString("ar-SA")} ر.س` : value.toLocaleString("ar-SA")}
         </div>
         <div className="text-xs text-muted-foreground mt-1">{label}</div>
       </CardContent>

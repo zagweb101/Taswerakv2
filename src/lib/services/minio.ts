@@ -57,8 +57,8 @@ export async function uploadFile(
     }
   }
 
-  // Local fallback — write to /home/z/my-project/upload/
-  const localDir = "/home/z/my-project/upload";
+  // Local fallback — write to .upload/ directory in project root
+  const localDir = path.join(process.cwd(), ".upload");
   await fs.mkdir(localDir, { recursive: true });
   const localPath = path.join(localDir, objectKey.replace(/\//g, "_"));
   await fs.writeFile(localPath, buffer);

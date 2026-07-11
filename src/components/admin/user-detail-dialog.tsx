@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -95,15 +95,19 @@ export function UserDetailDialog({
   };
 
   // Fetch when dialog opens
-  if (open && user && !detail && !pending && !error) {
-    fetchDetail(user);
-  }
+  useEffect(() => {
+    if (open && user && !detail && !pending && !error) {
+      fetchDetail(user);
+    }
+  }, [open, user, detail, pending, error]);
 
   // Reset when dialog closes
-  if (!open && (detail || error)) {
-    setDetail(null);
-    setError(null);
-  }
+  useEffect(() => {
+    if (!open && (detail || error)) {
+      setDetail(null);
+      setError(null);
+    }
+  }, [open, detail, error]);
 
   if (!user) return null;
 

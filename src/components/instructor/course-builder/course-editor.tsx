@@ -513,6 +513,24 @@ function SectionCard({
   const [editingTitle, setEditingTitle] = useState(false);
   const [title, setTitle] = useState(section.title);
 
+  const saveSectionTitle = async () => {
+    setEditingTitle(false);
+    if (title === section.title) return;
+    try {
+      const res = await fetch(`/api/instructor/sections/${section.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "فشل");
+      toast.success("تم تحديث القسم");
+    } catch (err: any) {
+      toast.error(err.message);
+      setTitle(section.title);
+    }
+  };
+
   return (
     <div className="rounded-2xl border border-border/60 overflow-hidden">
       <div className="bg-muted/30 p-3 flex items-center gap-3">
@@ -524,7 +542,7 @@ function SectionCard({
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => { setEditingTitle(false); if (title !== section.title) onUpdateLesson; }}
+            onBlur={saveSectionTitle}
             className="rounded-lg flex-1 h-8"
             autoFocus
           />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, Save, CheckCircle2, MessageSquare, X, Trash2, Pin } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -42,6 +43,7 @@ export function CritiqueInterface({
   reviewerId,
 }: Props) {
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
   const [critique, setCritique] = useState(existingCritique || "");
   const [pins, setPins] = useState<PinComment[]>(existingPinComments);
   const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
@@ -96,7 +98,7 @@ export function CritiqueInterface({
         toast.success("تم حفظ النقد بنجاح");
         // Optionally redirect back to critiques list
         setTimeout(() => {
-          window.location.href = "/instructor/critiques";
+          router.push("/instructor/critiques");
         }, 1000);
       } catch (err: any) {
         toast.error(err.message || "فشل الحفظ");

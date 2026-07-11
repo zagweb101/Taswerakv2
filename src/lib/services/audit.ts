@@ -4,7 +4,7 @@
 // ====================================================================
 
 import { db } from "@/lib/db";
-import { sendEmail } from "@/lib/services/email";
+import { sendEmail, EmailPayload } from "@/lib/services/email";
 
 interface AuditInput {
   userId?: string;
@@ -46,7 +46,7 @@ interface NotificationInput {
  * Create an in-app notification + optionally send email.
  */
 export async function notify(
-  input: NotificationInput & { email?: { to: string; payload: Awaited<ReturnType<typeof sendEmail>> } }
+  input: NotificationInput & { email?: { to: string; payload: EmailPayload } }
 ): Promise<void> {
   try {
     await db.notification.create({ data: input });
@@ -56,7 +56,7 @@ export async function notify(
 
   if (input.email) {
     try {
-      const payload = await input.email.payload;
+      const payload = input.email.payload;
       await sendEmail({ ...payload, to: input.email.to });
     } catch (err) {
       console.warn("[notify] could not send email:", err);

@@ -2,7 +2,7 @@
 // Taswerak — Email service
 // Mode: "simulation" (default in dev) | "smtp" (production)
 // In simulation mode, emails are logged to console + saved to a file
-// under /home/z/my-project/upload/_emails/ for easy review.
+// under .upload/_emails/ for easy review.
 // ====================================================================
 
 import { promises as fs } from "fs";
@@ -12,6 +12,15 @@ type Transport = "simulation" | "smtp";
 
 const transport: Transport = (process.env.EMAIL_TRANSPORT as Transport) || "simulation";
 const fromAddress = process.env.EMAIL_FROM || "Taswerak <no-reply@taswerak.com>";
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 interface EmailPayload {
   to: string;
@@ -53,7 +62,7 @@ async function simulateEmail(payload: EmailPayload): Promise<{ ok: boolean; mode
 
   // Persist to disk so admin can review in dev
   try {
-    const dir = "/home/z/my-project/upload/_emails";
+    const dir = path.join(process.cwd(), ".upload", "_emails");
     await fs.mkdir(dir, { recursive: true });
     const safeFile = `${stamp.replace(/[:.]/g, "-")}_${templateId}.log`;
     await fs.writeFile(
@@ -118,7 +127,7 @@ export function renderPaymentApprovedEmail(opts: {
 تم اعتماد دفعتك بمبلغ ${amount} ${currency} لدورة "${courseName}".
 
 يمكنك الآن البدء في الدورة من لوحة التحكم:
-http://localhost:3000/student/courses
+${process.env.NEXTAUTH_URL || "http://localhost:3000"}/student/courses
 
 تحياتنا،
 فريق تصويرك`,
@@ -129,13 +138,13 @@ http://localhost:3000/student/courses
   </div>
   <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 16px 16px;">
     <h1 style="font-size: 22px; color: #0A9ED9; margin-top: 0;">تم اعتماد دفعتك ✅</h1>
-    <p style="color: #374151; line-height: 1.7;">أهلاً <strong>${studentName}</strong>،</p>
+    <p style="color: #374151; line-height: 1.7;">أهلاً <strong>${escapeHtml(studentName)}</strong>،</p>
     <p style="color: #374151; line-height: 1.7;">
       تم اعتماد دفعتك بمبلغ <strong>${amount} ${currency}</strong> لدورة
-      <strong>"${courseName}"</strong>. يمكنك الآن البدء في مشاهددة المحاضرات
+      <strong>"${escapeHtml(courseName)}"</strong>. يمكنك الآن البدء في مشاهددة المحاضرات
       ورفع أعمالك للنقد.
     </p>
-    <a href="http://localhost:3000/student/courses" style="display: inline-block; background: linear-gradient(135deg, #0A9ED9, #00A3AA, #D65221); color: white; padding: 12px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; margin-top: 16px;">
+    <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/student/courses" style="display: inline-block; background: linear-gradient(135deg, #0A9ED9, #00A3AA, #D65221); color: white; padding: 12px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; margin-top: 16px;">
       ابدأ الدورة الآن
     </a>
     <p style="color: #6b7280; font-size: 13px; margin-top: 24px;">
@@ -167,7 +176,7 @@ export function renderPaymentRejectedEmail(opts: {
 السبب: ${rejectionReason}
 
 يمكنك رفع إيصال جديد من لوحة التحكم:
-http://localhost:3000/student/payments
+${process.env.NEXTAUTH_URL || "http://localhost:3000"}/student/payments
 
 تحياتنا،
 فريق تصويرك`,
@@ -178,18 +187,18 @@ http://localhost:3000/student/payments
   </div>
   <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 16px 16px;">
     <h1 style="font-size: 22px; color: #D65221; margin-top: 0;">تحتاج دفعتك لمراجعة ⚠️</h1>
-    <p style="color: #374151; line-height: 1.7;">أهلاً <strong>${studentName}</strong>،</p>
+    <p style="color: #374151; line-height: 1.7;">أهلاً <strong>${escapeHtml(studentName)}</strong>،</p>
     <p style="color: #374151; line-height: 1.7;">
       للأسف لم نتمكن من اعتماد دفعتك بمبلغ <strong>${amount} ${currency}</strong>
-      لدورة <strong>"${courseName}"</strong>.
+      لدورة <strong>"${escapeHtml(courseName)}"</strong>.
     </p>
     <div style="background: #fef3c7; border: 1px solid #fde68a; padding: 12px 16px; border-radius: 12px; margin: 16px 0;">
-      <strong>السبب:</strong> ${rejectionReason}
+      <strong>السبب:</strong> ${escapeHtml(rejectionReason)}
     </div>
     <p style="color: #374151; line-height: 1.7;">
       يمكنك رفع إيصال جديد بعد التحقق من البيانات.
     </p>
-    <a href="http://localhost:3000/student/payments" style="display: inline-block; background: linear-gradient(135deg, #0A9ED9, #00A3AA, #D65221); color: white; padding: 12px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; margin-top: 16px;">
+    <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/student/payments" style="display: inline-block; background: linear-gradient(135deg, #0A9ED9, #00A3AA, #D65221); color: white; padding: 12px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; margin-top: 16px;">
       رفع إيصال جديد
     </a>
     <p style="color: #6b7280; font-size: 13px; margin-top: 24px;">
@@ -221,7 +230,7 @@ export function renderCertificateIssuedEmail(opts: {
 التقدير: ${grade}
 
 حمّل شهادتك من:
-http://localhost:3000/student/certificates
+${process.env.NEXTAUTH_URL || "http://localhost:3000"}/student/certificates
 
 تحياتنا،
 فريق تصويرك`,
@@ -232,16 +241,16 @@ http://localhost:3000/student/certificates
   </div>
   <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 16px 16px;">
     <h1 style="font-size: 22px; color: #00A3AA; margin-top: 0;">شهادتك جاهزة 🎓</h1>
-    <p style="color: #374151; line-height: 1.7;">مبروك <strong>${studentName}</strong>،</p>
+    <p style="color: #374151; line-height: 1.7;">مبروك <strong>${escapeHtml(studentName)}</strong>،</p>
     <p style="color: #374151; line-height: 1.7;">
-      تم إصدار شهادتك لإتمام دورة <strong>"${courseName}"</strong>.
+      تم إصدار شهادتك لإتمام دورة <strong>"${escapeHtml(courseName)}"</strong>.
     </p>
     <div style="background: #f0fdfa; border: 1px solid #ccfbf1; padding: 16px; border-radius: 12px; margin: 16px 0; text-align: center;">
       <div style="font-size: 12px; color: #6b7280;">رقم الشهادة</div>
       <div style="font-family: monospace; font-weight: 700; font-size: 16px; color: #00A3AA; letter-spacing: 1px;">${certificateNumber}</div>
       <div style="font-size: 12px; color: #6b7280; margin-top: 8px;">التقدير: <strong>${grade}</strong></div>
     </div>
-    <a href="http://localhost:3000/student/certificates" style="display: inline-block; background: linear-gradient(135deg, #0A9ED9, #00A3AA, #D65221); color: white; padding: 12px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; margin-top: 16px;">
+    <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/student/certificates" style="display: inline-block; background: linear-gradient(135deg, #0A9ED9, #00A3AA, #D65221); color: white; padding: 12px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; margin-top: 16px;">
       تحميل الشهادة
     </a>
   </div>

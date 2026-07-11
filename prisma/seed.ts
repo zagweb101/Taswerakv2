@@ -9,6 +9,7 @@
 
 import { PrismaClient, Role, CourseLevel, CourseStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -264,7 +265,7 @@ async function main() {
               courseId: secondCourse.id,
               certificateNumber: `TAS-2026-000001`,
               grade: "ممتاز",
-              verifyToken: `tas_verify_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`,
+              verifyToken: `tas_verify_${crypto.randomUUID()}`,
               status: "ISSUED",
             },
           });

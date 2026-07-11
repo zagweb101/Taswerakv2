@@ -126,8 +126,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const imp = (user as { impersonatedBy?: string }).impersonatedBy;
         if (imp) {
           token.impersonatedBy = imp;
-        } else if (!token.impersonatedBy) {
-          // Don't clear on regular sign-in (already unset)
+        } else {
+          // Clear impersonation on regular sign-in
+          delete token.impersonatedBy;
         }
       }
       return token;

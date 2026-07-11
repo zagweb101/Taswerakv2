@@ -10,6 +10,15 @@ import { sendEmail } from "@/lib/services/email";
 import { rateLimitPresets, getClientIP } from "@/lib/services/rate-limit";
 import { writeAudit } from "@/lib/services/audit";
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // Use shared schema from validations/index.ts
 const schema = contactSchema;
 
@@ -17,7 +26,7 @@ export async function POST(req: NextRequest) {
   try {
     // Rate limit: 3 contact messages per hour per IP
     const ip = getClientIP(req);
-    const rl = rateLimitPresets.signup(ip); // reuse signup limiter (5/hr)
+    const rl = rateLimitPresets.contact(ip);
     if (!rl.success) {
       return NextResponse.json(
         { ok: false, error: "محاولات كثيرة. حاول بعد ساعة." },
@@ -41,7 +50,7 @@ export async function POST(req: NextRequest) {
       await sendEmail({
         to: adminEmail,
         subject: `[تصويرك] رسالة تواصل جديدة: ${subject}`,
-        templateId: "SYSTEM",
+        templateId: "WELCOME" as any,
         data: { name, email, phone, subject, message },
         text: `رسالة تواصل جديدة من ${name} <${email}>${phone ? ` (${phone})` : ""}
 
@@ -58,15 +67,15 @@ ${message}
     <div style="color: white; font-size: 24px; font-weight: 800;">تصويرك — رسالة تواصل</div>
   </div>
   <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 16px 16px;">
-    <h2 style="color: #0A9ED9; margin-top: 0;">${subject}</h2>
+    <h2 style="color: #0A9ED9; margin-top: 0;">${escapeHtml(subject)}</h2>
     <table style="width: 100%; margin-bottom: 16px;">
-      <tr><td style="padding: 4px 0; color: #6b7280; width: 80px;">الاسم:</td><td style="font-weight: 600;">${name}</td></tr>
-      <tr><td style="padding: 4px 0; color: #6b7280;">البريد:</td><td style="font-weight: 600;" dir="ltr">${email}</td></tr>
-      ${phone ? `<tr><td style="padding: 4px 0; color: #6b7280;">الجوال:</td><td style="font-weight: 600;" dir="ltr">${phone}</td></tr>` : ""}
+      <tr><td style="padding: 4px 0; color: #6b7280; width: 80px;">الاسم:</td><td style="font-weight: 600;">${escapeHtml(name)}</td></tr>
+      <tr><td style="padding: 4px 0; color: #6b7280;">البريد:</td><td style="font-weight: 600;" dir="ltr">${escapeHtml(email)}</td></tr>
+      ${phone ? `<tr><td style="padding: 4px 0; color: #6b7280;">الجوال:</td><td style="font-weight: 600;" dir="ltr">${escapeHtml(phone)}</td></tr>` : ""}
     </table>
     <div style="background: #f9fafb; padding: 16px; border-radius: 12px; border: 1px solid #e5e7eb;">
       <div style="color: #6b7280; font-size: 12px; margin-bottom: 8px;">الرسالة:</div>
-      <p style="margin: 0; line-height: 1.7; white-space: pre-wrap;">${message}</p>
+      <p style="margin: 0; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(message)}</p>
     </div>
   </div>
 </div>

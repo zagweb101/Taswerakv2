@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Upload, Loader2, X, FileImage, CheckCircle2, Camera, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,7 @@ export function SubmissionForm({
   existingSubmission,
 }: Props) {
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
@@ -109,7 +111,7 @@ export function SubmissionForm({
         setSuccess(true);
         toast.success("تم تسليم الواجب بنجاح! سيتم إشعار المدرّب.");
         setTimeout(() => {
-          window.location.reload();
+          router.refresh();
         }, 1500);
       } catch (err: any) {
         toast.error(err.message || "فشل التسليم");

@@ -30,6 +30,25 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check if signup is enabled via admin settings
+    try {
+      const { db } = await import("@/lib/db");
+      const settingsRow = await db.cmsContent.findUnique({
+        where: { key: "admin_settings_flags" },
+      });
+      if (settingsRow) {
+        const flags = JSON.parse(settingsRow.value);
+        if (flags.enableSignup === false) {
+          return NextResponse.json(
+            { ok: false, error: "التسجيل موقّف حالياً. تواصل مع الإدارة." },
+            { status: 403 }
+          );
+        }
+      }
+    } catch {
+      // If settings check fails, allow signup (fail open for dev)
+    }
+
     const body = await req.json();
     const parsed = schema.safeParse(body);
     if (!parsed.success) {

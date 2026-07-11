@@ -150,7 +150,17 @@ export async function GET() {
       const stored = await getCmsValue(key);
       if (stored) {
         try {
-          result[key] = { ...(defaults as any)[key], ...JSON.parse(stored) };
+          const parsed = JSON.parse(stored);
+          // Mask sensitive fields in GET response too
+          const masked: Record<string, unknown> = {};
+          for (const [k, v] of Object.entries(parsed)) {
+            if (/password|secret|key/i.test(k)) {
+              masked[k] = v ? "••••••••" : "";
+            } else {
+              masked[k] = v;
+            }
+          }
+          result[key] = { ...(defaults as any)[key], ...masked };
         } catch {
           result[key] = (defaults as any)[key];
         }
@@ -209,11 +219,23 @@ export async function PUT(req: NextRequest) {
       userAgent: req.headers.get("user-agent") || undefined,
     });
 
+    // Don't leak sensitive data (passwords, secret keys) in response
+    const safeResponse: Record<string, unknown> = {};
+    if (dataToSave && typeof dataToSave === "object") {
+      for (const [k, v] of Object.entries(dataToSave)) {
+        if (/password|secret|key/i.test(k)) {
+          safeResponse[k] = v ? "••••••••" : "";
+        } else {
+          safeResponse[k] = v;
+        }
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       message: "تم حفظ الإعدادات بنجاح",
       section,
-      data: dataToSave,
+      data: safeResponse,
     });
   } catch (err) {
     console.error("[admin/settings PUT] error:", err);

@@ -8,9 +8,9 @@ const nextConfig: NextConfig = {
   // Catch side-effect bugs in development
   reactStrictMode: true,
 
-  // Don't fail the build on minor TS issues — caught by lint separately
+  // Fail build on TS errors
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   // Allow cross-origin from preview panel
@@ -65,7 +65,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self'",
+              "connect-src 'self' https://fonts.googleapis.com",
               "frame-ancestors 'none'",
               "form-action 'self'",
               "base-uri 'self'",

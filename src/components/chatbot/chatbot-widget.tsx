@@ -35,29 +35,32 @@ export function ChatbotWidget() {
     const userMsg = input.trim();
     setInput("");
 
-    const newMessages: Message[] = [...messages, { role: "user", content: userMsg }];
-    setMessages(newMessages);
+    setMessages((prev) => {
+      const newMessages: Message[] = [...prev, { role: "user", content: userMsg }];
 
-    startTransition(async () => {
-      try {
-        const res = await fetch("/api/chatbot", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message: userMsg,
-            history: messages.map((m) => ({ role: m.role, content: m.content })),
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.ok) throw new Error(data.error || "فشل الرد");
+      startTransition(async () => {
+        try {
+          const res = await fetch("/api/chatbot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message: userMsg,
+              history: prev.map((m) => ({ role: m.role, content: m.content })),
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.error || "فشل الرد");
 
-        setMessages([...newMessages, { role: "assistant", content: data.reply }]);
-      } catch (err: any) {
-        setMessages([...newMessages, {
-          role: "assistant",
-          content: "عذراً، تعذّر الرد الآن. تواصل معنا على info@taswerak.com",
-        }]);
-      }
+          setMessages([...newMessages, { role: "assistant", content: data.reply }]);
+        } catch (err: any) {
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: "عذراً، تعذّر الرد الآن. تواصل معنا على info@taswerak.com",
+          }]);
+        }
+      });
+
+      return newMessages;
     });
   };
 
