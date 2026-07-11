@@ -8,6 +8,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { rateLimitPresets, getClientIP } from "@/lib/services/rate-limit";
+import { sendWelcomeEmail } from "@/lib/services/marketing-email";
 
 const schema = z.object({
   name: z.string().min(2, "الاسم قصير جداً"),
@@ -112,6 +113,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true, user });
+    // Send welcome email (async, non-blocking)
+    sendWelcomeEmail(user.id).catch(() => {});
   } catch (err) {
     console.error("[signup] error:", err);
     return NextResponse.json(

@@ -25,9 +25,10 @@ export interface CertificateData {
  * Uses Puppeteer if available, otherwise returns null (caller falls back to HTML).
  */
 export async function generateCertificatePdf(data: CertificateData): Promise<Buffer | null> {
-  // Try Puppeteer
+  // Try Puppeteer (lazy import — package may not be installed)
   try {
-    const puppeteer = (await import("puppeteer")).default;
+    // @ts-ignore — puppeteer is optional
+    const puppeteer = (await import(/* webpackIgnore: true */ /* @vite-ignore */ "puppeteer")).default;
     const html = await generateCertificateHtml(data);
 
     const browser = await puppeteer.launch({

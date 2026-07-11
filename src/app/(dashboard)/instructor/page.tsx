@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Wallet, BookCopy, Image, TrendingUp, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StudentsNeedingAttention } from "@/components/instructor/students-needing-attention";
 
 export const dynamic = "force-dynamic";
 
@@ -43,8 +44,15 @@ export default async function InstructorOverviewPage() {
         </p>
       </div>
 
-      {/* Stat cards */}
+      {/* Stat cards — reordered: submissions first (instructor's primary task) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+        <StatCard
+          icon={<Image className="h-5 w-5" />}
+          label="أعمال بانتظار النقد"
+          value={submissionsCount}
+          tint="from-[#00A3AA]/10 to-[#00A3AA]/5"
+          iconColor="text-[#00A3AA]"
+        />
         <StatCard
           icon={<Wallet className="h-5 w-5" />}
           label="مدفوعات بانتظار المراجعة"
@@ -58,13 +66,6 @@ export default async function InstructorOverviewPage() {
           value={coursesCount}
           tint="from-[#0A9ED9]/10 to-[#0A9ED9]/5"
           iconColor="text-[#0A9ED9]"
-        />
-        <StatCard
-          icon={<Image className="h-5 w-5" />}
-          label="أعمال بانتظار النقد"
-          value={submissionsCount}
-          tint="from-[#00A3AA]/10 to-[#00A3AA]/5"
-          iconColor="text-[#00A3AA]"
         />
         <StatCard
           icon={<TrendingUp className="h-5 w-5" />}
@@ -127,6 +128,9 @@ export default async function InstructorOverviewPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Students needing attention */}
+      <StudentsNeedingAttention instructorId={session.user.id} role={session.user.role} />
     </div>
   );
 }

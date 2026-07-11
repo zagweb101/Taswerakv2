@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { brandGradientText } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
+import { NotificationBell } from "@/components/realtime/notification-bell";
 
 export interface NavItem {
   href: string;
@@ -60,13 +61,16 @@ export function DashboardShell({
             تصويرك
           </span>
         </Link>
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-lg hover:bg-muted/60 transition-colors"
-          aria-label="القائمة"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell role={role} />
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="p-2 rounded-lg hover:bg-muted/60 transition-colors"
+            aria-label="القائمة"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
       </header>
 
       <div className="flex">
@@ -183,7 +187,8 @@ function SidebarContent({
         ))}
       </nav>
 
-      <div className="p-3 border-t border-border/60">
+      <div className="p-3 border-t border-border/60 space-y-2">
+        <NotificationBell role={role} sidebarMode />
         <Button
           variant="ghost"
           onClick={() => signOut({ callbackUrl: "/" })}
