@@ -297,14 +297,21 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
   aspect-ratio: 16/9;
   background: #E8E8E8;
   overflow: hidden;
+  position: relative;
 }
 .course-card-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+.course-card-img--alt1 {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+.course-card-img--alt2 {
+  background: linear-gradient(135deg, #2d1b3d 0%, #1a1a2e 50%, #0d1b2a 100%);
+}
 .course-card-body {
-  padding: 20px;
+  padding: 24px;
 }
 .course-card-body h4 {
   font-size: var(--text-base);
@@ -338,7 +345,7 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
   position: relative;
 }
 .testimonial-quote::before {
-  content: '"';
+  content: '\201C';
   display: block;
   font-size: 64px;
   line-height: 1;
@@ -370,6 +377,28 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
 }
 .testimonial-dots span.active {
   background: var(--brand-blue);
+}
+.testimonial-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-top: 48px;
+  padding-top: 48px;
+  border-top: 1px solid var(--border);
+}
+.testimonial-stat {
+  text-align: center;
+}
+.testimonial-stat-value {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--brand-blue);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.testimonial-stat-label {
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
 }
 
 /* ═══ CTA ═══ */
@@ -714,6 +743,67 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
   .view-toggle { bottom: auto; top: 16px; left: 16px; }
 }
 
+/* ═══ MOBILE HAMBURGER ═══ */
+.hamburger {
+  display: none;
+  width: 32px;
+  height: 32px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px;
+}
+.hamburger span {
+  display: block;
+  width: 20px;
+  height: 1.5px;
+  background: var(--fg);
+  transition: transform 300ms ease, opacity 300ms ease;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 56px;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: var(--surface);
+  z-index: 99;
+  padding: 32px var(--pad);
+  flex-direction: column;
+  gap: 0;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  display: block;
+  padding: 16px 0;
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--fg);
+  border-bottom: 1px solid var(--border);
+  transition: color 300ms ease;
+}
+.mobile-menu a:last-child { border-bottom: none; }
+.mobile-menu a:hover { color: var(--brand-blue); }
+.mobile-menu .btn {
+  margin-top: 24px;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .hamburger { display: flex; }
+  .nav-links, .nav-cta { display: none; }
+  .nav-logo { grid-column: 12 / span 10; }
+}
+
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 767px) {
   .hero .grid-12 {
@@ -732,8 +822,6 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
     min-height: 280px;
     order: 1;
   }
-  .nav-links, .nav-cta { display: none; }
-  .nav-logo { grid-column: 12 / span 12; }
   .steps .grid-12 {
     grid-template-columns: 1fr;
   }
@@ -781,11 +869,21 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
       <div class="nav-cta">
         <button class="btn btn-primary">ابدأ التعلم</button>
       </div>
+      <button class="hamburger" onclick="toggleMobileMenu()" aria-label="القائمة">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </nav>
 
-<!-- HERO -->
+<!-- MOBILE MENU -->
+<div id="mobile-menu" class="mobile-menu">
+  <a href="#how" onclick="closeMobileMenu()">كيف يعمل</a>
+  <a href="#courses" onclick="closeMobileMenu()">الدورات</a>
+  <a href="#testimonials" onclick="closeMobileMenu()">آراء الطلاب</a>
+  <a href="#footer" onclick="closeMobileMenu()">تواصل معنا</a>
+  <button class="btn btn-primary" onclick="closeMobileMenu()">ابدأ التعلم</button>
+</div>
 <section class="hero">
   <div class="grid-container">
     <div class="grid-12">
@@ -858,8 +956,7 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
         </div>
       </div>
       <div class="course-card animate-in">
-        <div class="course-card-img">
-          <img src="assets/hero.jpg" alt="إضاءة الم studio">
+        <div class="course-card-img course-card-img--alt1">
         </div>
         <div class="course-card-body">
           <h4>تقنيات الإضاءة في الاستوديو</h4>
@@ -868,8 +965,7 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
         </div>
       </div>
       <div class="course-card animate-in">
-        <div class="course-card-img">
-          <img src="assets/hero.jpg" alt="التصوير المعماري">
+        <div class="course-card-img course-card-img--alt2">
         </div>
         <div class="course-card-body">
           <h4>التصوير المعماري والداخلي</h4>
@@ -897,6 +993,20 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
         <span class="active"></span>
         <span></span>
         <span></span>
+      </div>
+      <div class="testimonial-stats">
+        <div class="testimonial-stat">
+          <div class="testimonial-stat-value">+٢٬٠٠٠</div>
+          <div class="testimonial-stat-label">طالب مسجّل</div>
+        </div>
+        <div class="testimonial-stat">
+          <div class="testimonial-stat-value">٤٫٨</div>
+          <div class="testimonial-stat-label">متوسط التقييم</div>
+        </div>
+        <div class="testimonial-stat">
+          <div class="testimonial-stat-value">٩٥٪</div>
+          <div class="testimonial-stat-label">نسبة إتمام الدورات</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1090,7 +1200,7 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
             <td><span class="status-badge status-pending">جديدة</span></td>
           </tr>
           <tr>
-            <td style="font-weight:500;">التصوير----</td>
+            <td style="font-weight:500;">التصوير القياسي</td>
             <td style="color:var(--fg-muted);">فهد العتيبي</td>
             <td>
               <div style="display:flex;align-items:center;gap:8px;">
@@ -1135,6 +1245,18 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
 </div><!-- /dashboard-view -->
 
 <script>
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const hamburger = document.querySelector('.hamburger');
+  menu.classList.toggle('open');
+  hamburger.classList.toggle('open');
+}
+function closeMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const hamburger = document.querySelector('.hamburger');
+  menu.classList.remove('open');
+  hamburger.classList.remove('open');
+}
 function showView(view) {
   const landing = document.getElementById('landing-view');
   const dashboard = document.getElementById('dashboard-view');
