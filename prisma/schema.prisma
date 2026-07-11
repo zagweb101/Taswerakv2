@@ -128,6 +128,10 @@ model User {
   // Per-user settings (one-to-one)
   settings UserSettings?
 
+  // Guardian links (self-referential)
+  guardianLinks GuardianLink[] @relation("GuardianLinks")
+  studentLinks  GuardianLink[] @relation("StudentLinks")
+
   @@index([role])
 }
 
@@ -636,6 +640,9 @@ model GuardianLink {
   studentId  String
   relation   String   @default("PARENT") // PARENT | SIBLING | OTHER
   createdAt  DateTime @default(now())
+
+  guardian User @relation("GuardianLinks", fields: [guardianId], references: [id], onDelete: Cascade)
+  student  User @relation("StudentLinks", fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([guardianId, studentId])
   @@index([guardianId])
