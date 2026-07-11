@@ -1,10 +1,9 @@
 // ====================================================================
 // Service Worker — PWA offline support
-// Robust version: does not break on network errors, does not cache
-// API or RSC requests.
+// v3: bypasses all dashboard routes to prevent stale/503 issues
 // ====================================================================
 
-const CACHE_NAME = "taswerak-v2";
+const CACHE_NAME = "taswerak-v3";
 const STATIC_ASSETS = [
   "/logo.webp",
   "/manifest.json",
@@ -36,21 +35,31 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
 
-  // Skip ALL API requests — always go to network
+  // Skip ALL API requests
   if (url.pathname.startsWith("/api/")) return;
 
-  // Skip RSC (React Server Component) requests — always go to network
+  // Skip RSC (React Server Component) requests
   if (url.searchParams.has("_rsc")) return;
 
-  // Skip non-http(s) requests (e.g., chrome-extension://)
+  // Skip non-http(s) requests
   if (!url.protocol.startsWith("http")) return;
 
-  // For navigation requests (pages): network-first, fallback to cache, then to "/"
+  // Skip ALL dashboard routes — they should never be served from cache
+  // This prevents stale dashboard pages + 503 offline errors
+  if (
+    url.pathname.startsWith("/admin") ||
+    url.pathname.startsWith("/instructor") ||
+    url.pathname.startsWith("/student") ||
+    url.pathname.startsWith("/guardian")
+  ) {
+    return; // Let the browser handle it normally (network only)
+  }
+
+  // For navigation requests (public pages only): network-first
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Cache successful page responses
           if (response.status === 200) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {});
@@ -59,13 +68,15 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => {
           // Network failed — try cache, then fallback to "/"
-          return caches.match(request).then((cached) => cached || caches.match("/")).catch(() => new Response("", { status: 503 }));
+          return caches.match(request)
+            .then((cached) => cached || caches.match("/"))
+            .catch(() => new Response("", { status: 503, statusText: "Offline" }));
         })
     );
     return;
   }
 
-  // For static assets (images, CSS, JS, fonts): cache-first
+  // For static assets: cache-first
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
@@ -77,10 +88,7 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         })
-        .catch(() => {
-          // Return empty response for failed asset loads (don't crash)
-          return new Response("", { status: 503, statusText: "Offline" });
-        });
+        .catch(() => new Response("", { status: 503, statusText: "Offline" }));
     })
   );
 });

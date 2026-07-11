@@ -197,7 +197,7 @@ export default async function InstructorCoursesPage() {
                   </div>
 
                   <div className="flex gap-2 mt-4 pt-4 border-t border-border/40">
-                    <Link href={`/courses/${c.slug}`} className="flex-1">
+                    <Link href={`/instructor/courses/${c.id}/preview`} className="flex-1">
                       <Button variant="outline" size="sm" className="rounded-xl w-full">
                         <Eye className="h-3.5 w-3.5 ml-1" />
                         معاينة
