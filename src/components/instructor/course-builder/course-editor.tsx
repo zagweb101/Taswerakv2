@@ -110,20 +110,41 @@ export function CourseEditor({ mode, courseId, initialData, instructorId }: Prop
     }
     startTransition(async () => {
       try {
+        // Normalize: convert empty strings to null for optional URL fields
+        // Zod url() validation rejects empty strings, so we must send null instead
+        const normalizeUrl = (val: string | null | undefined): string | null => {
+          if (!val || val.trim() === "") return null;
+          return val.trim();
+        };
+
         const payload = {
-          title: course.title,
-          titleAr: course.titleAr || null,
-          description: course.description,
-          descriptionAr: course.descriptionAr || null,
-          price: Number(course.price),
+          title: course.title?.trim() || "",
+          titleAr: course.titleAr?.trim() || null,
+          description: course.description?.trim() || "",
+          descriptionAr: course.descriptionAr?.trim() || null,
+          price: Number(course.price) || 0,
           discountPrice: course.discountPrice ? Number(course.discountPrice) : null,
           currency: course.currency,
           level: course.level,
-          category: course.category || null,
-          durationHours: Number(course.durationHours),
-          thumbnailUrl: course.thumbnailUrl,
-          previewVideoUrl: course.previewVideoUrl,
+          category: course.category?.trim() || null,
+          durationHours: Number(course.durationHours) || 0,
+          thumbnailUrl: normalizeUrl(course.thumbnailUrl),
+          previewVideoUrl: normalizeUrl(course.previewVideoUrl),
         };
+
+        // Client-side validation before sending
+        if (payload.title.length < 2) {
+          toast.error("العنوان مطلوب (حرفان على الأقل)");
+          return;
+        }
+        if (payload.description.length < 10) {
+          toast.error("الوصف مطلوب (10 أحرف على الأقل)");
+          return;
+        }
+        if (payload.price < 0) {
+          toast.error("السعر يجب أن يكون صفر أو أكثر");
+          return;
+        }
 
         let res;
         if (mode === "create") {
@@ -569,22 +590,33 @@ function LessonRow({
       fd.append("folder", "lessons/videos");
       const res = await fetch("/api/instructor/upload", { method: "POST", body: fd });
       const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || "فشل الرفع");
+      if (!res.ok || !data.ok) {
+        // Show clear error message from API (including "storage not configured")
+        throw new Error(data.error || "فشل الرفع");
+      }
       setVideoUrl(data.url);
       toast.success("تم رفع الفيديو");
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "تعذّر رفع الملف");
     } finally {
       setUploading(false);
     }
   };
 
   const save = () => {
+    // Normalize: empty strings → null for optional URL fields
+    const normalizeUrl = (val: string): string | null => {
+      if (!val || val.trim() === "") return null;
+      return val.trim();
+    };
+
     onUpdate({
-      title,
-      description: description || null,
-      videoUrl: videoUrl || null,
-      duration: Number(duration),
+      title: title?.trim() || "",
+      description: description?.trim() || null,
+      videoUrl: normalizeUrl(videoUrl),
+      pdfUrl: normalizeUrl(lesson.pdfUrl || ""),
+      thumbnailUrl: normalizeUrl(lesson.thumbnailUrl || ""),
+      duration: Number(duration) || 0,
       isPreview,
     });
     setEditOpen(false);

@@ -38,8 +38,8 @@ export const createCourseSchema = z.object({
   capacity: z.number().min(1).optional().nullable(),
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
-  thumbnailUrl: z.string().url().optional().nullable(),
-  previewVideoUrl: z.string().url().optional().nullable(),
+  thumbnailUrl: z.union([z.string().url(), z.null(), z.literal("")]).optional().transform((v) => (v === "" ? null : v)).nullable(),
+  previewVideoUrl: z.union([z.string().url(), z.null(), z.literal("")]).optional().transform((v) => (v === "" ? null : v)).nullable(),
 });
 
 export const updateCourseSchema = createCourseSchema.partial().extend({
@@ -71,9 +71,9 @@ export const createLessonSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(2000).optional().nullable(),
   type: z.enum(["VIDEO", "TEXT", "PDF", "LIVE"]).default("VIDEO"),
-  videoUrl: z.string().url().optional().nullable(),
-  pdfUrl: z.string().url().optional().nullable(),
-  thumbnailUrl: z.string().url().optional().nullable(),
+  videoUrl: z.union([z.string().url(), z.null(), z.literal("")]).optional().transform((v) => (v === "" ? null : v)).nullable(),
+  pdfUrl: z.union([z.string().url(), z.null(), z.literal("")]).optional().transform((v) => (v === "" ? null : v)).nullable(),
+  thumbnailUrl: z.union([z.string().url(), z.null(), z.literal("")]).optional().transform((v) => (v === "" ? null : v)).nullable(),
   duration: z.number().min(0).default(0),
   order: z.number().min(0).default(0),
   isPreview: z.boolean().default(false),
