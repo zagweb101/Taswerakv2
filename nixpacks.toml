@@ -4,7 +4,7 @@
 # ====================================================================
 
 [phases.setup]
-nixPkgs = ["nodejs_22", "openssl"]
+nixPkgs = ["nodejs_22", "openssl", "curl"]
 nixLibs = ["openssl"]
 
 [phases.install]
