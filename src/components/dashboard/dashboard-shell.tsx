@@ -19,7 +19,7 @@ export interface NavItem {
 }
 
 export interface DashboardShellProps {
-  role: "student" | "instructor" | "admin";
+  role: "student" | "instructor" | "admin" | "guardian";
   roleLabel: string;
   navItems: NavItem[];
   userName?: string | null;
