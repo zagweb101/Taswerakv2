@@ -12,7 +12,7 @@
   "categories": ["education", "photography"],
   "icons": [
     {
-      "src": "/logo.svg",
+      "src": "/logo.webp",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

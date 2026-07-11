@@ -6,7 +6,7 @@
 export const brand = {
   name: "تصويرك",
   nameEn: "Taswerak",
-  logoUrl: "/logo.svg",
+  logoUrl: "/logo.webp",
   city: "جدة",
   country: "السعودية",
   gradient: {

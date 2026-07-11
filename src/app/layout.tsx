@@ -46,8 +46,8 @@ export const metadata: Metadata = {
   creator: "Ahmed Zaghloul",
   publisher: "Taswerak",
   icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
+    icon: "/logo.webp",
+    apple: "/logo.webp",
   },
   manifest: "/manifest.json",
   alternates: {
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     url: "/",
     images: [
       {
-        url: "/logo.svg",
+        url: "/logo.webp",
         width: 240,
         height: 64,
         alt: "تصويرك — Taswerak",
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "تصويرك | Taswerak",
     description: "تعلّم التصوير الفوتوغرافي من الصفر للاحتراف",
-    images: ["/logo.svg"],
+    images: ["/logo.webp"],
   },
   robots: {
     index: true,

@@ -6,7 +6,7 @@
 
 const CACHE_NAME = "taswerak-v1";
 const STATIC_ASSETS = [
-  "/logo.svg",
+  "/logo.webp",
   "/manifest.json",
 ];
 
