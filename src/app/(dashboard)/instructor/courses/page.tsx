@@ -111,10 +111,12 @@ export default async function InstructorCoursesPage() {
         title="دوراتي"
         description="أدِر دوراتك الحالية وأنشئ دورات جديدة"
         actions={
-          <Button className="rounded-xl brand-gradient text-white hover:opacity-90">
-            <Plus className="h-4 w-4 ml-1" />
-            دورة جديدة
-          </Button>
+          <Link href="/instructor/courses/new">
+            <Button className="rounded-xl brand-gradient text-white hover:opacity-90">
+              <Plus className="h-4 w-4 ml-1" />
+              دورة جديدة
+            </Button>
+          </Link>
         }
       />
 
@@ -201,10 +203,12 @@ export default async function InstructorCoursesPage() {
                         معاينة
                       </Button>
                     </Link>
-                    <Button size="sm" className="rounded-xl flex-1 brand-gradient text-white hover:opacity-90">
-                      <Pencil className="h-3.5 w-3.5 ml-1" />
-                      تحرير
-                    </Button>
+                    <Link href={`/instructor/courses/${c.id}/edit`} className="flex-1">
+                      <Button size="sm" className="rounded-xl w-full brand-gradient text-white hover:opacity-90">
+                        <Pencil className="h-3.5 w-3.5 ml-1" />
+                        تحرير
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>

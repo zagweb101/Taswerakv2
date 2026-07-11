@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { SessionProvider } from "next-auth/react";
+import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -57,6 +58,7 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-tajawal), system-ui, sans-serif" }}
       >
         <SessionProvider>{children}</SessionProvider>
+        <CookieConsentBanner />
         <Toaster />
         <SonnerToaster position="top-center" dir="rtl" />
       </body>

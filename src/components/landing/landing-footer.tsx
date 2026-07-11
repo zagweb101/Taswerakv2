@@ -86,8 +86,10 @@ export async function LandingFooter() {
         <div className="mt-10 pt-6 border-t border-border/40 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-muted-foreground">
           <p>{footerNote}</p>
           <div className="flex gap-4">
-            <Link href="#" className="hover:text-foreground">سياسة الخصوصية</Link>
-            <Link href="#" className="hover:text-foreground">الشروط والأحكام</Link>
+            <Link href="/privacy" className="hover:text-foreground">سياسة الخصوصية</Link>
+            <Link href="/terms" className="hover:text-foreground">الشروط والأحكام</Link>
+            <Link href="/refund" className="hover:text-foreground">الاسترداد</Link>
+            <Link href="/cookies" className="hover:text-foreground">الكوكيز</Link>
           </div>
         </div>
       </div>

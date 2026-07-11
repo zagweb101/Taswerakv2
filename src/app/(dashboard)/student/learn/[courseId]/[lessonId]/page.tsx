@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProgressRing } from "@/components/dashboard/status-badges";
+import { LessonVideoPlayer } from "@/components/student/lesson-video-player";
 
 export const dynamic = "force-dynamic";
 
@@ -146,11 +147,11 @@ export default async function LessonPlayerPage({ params }: PageProps) {
           <Card className="rounded-2xl border-border/60 overflow-hidden">
             <div className="aspect-video bg-black flex items-center justify-center relative">
               {lesson.videoUrl ? (
-                <video
+                <LessonVideoPlayer
                   src={lesson.videoUrl}
-                  controls
-                  className="w-full h-full"
                   poster={lesson.thumbnailUrl || undefined}
+                  courseId={courseId}
+                  lessonId={lessonId}
                 />
               ) : (
                 <div className="text-center text-white/70">
