@@ -247,10 +247,10 @@ export default async function CourseDetailPage({
         variant: "default" as const,
       };
     }
-    // Logged-in student, not enrolled — go to payments to upload receipt
+    // Logged-in student, not enrolled — go to checkout
     return {
-      href: `/student/payments?course=${dbCourse?.id || ""}`,
-      label: "ارفع إيصال الدفع",
+      href: `/student/checkout/${dbCourse?.id || ""}`,
+      label: "سجّل وادفع",
       variant: "default" as const,
     };
   })();

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { SessionProvider } from "next-auth/react";
 import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -20,9 +21,13 @@ const tajawal = Tajawal({
 });
 
 export const metadata: Metadata = {
-  title: "تصويرك | Taswerak",
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "https://taswerak.com"),
+  title: {
+    default: "تصويرك | Taswerak — تعلّم التصوير الفوتوغرافي",
+    template: "%s | تصويرك",
+  },
   description:
-    "منصة تصويرك لتعلّم التصوير الفوتوغرافي من الصفر للاحتراف — جدة، السعودية. دورات في أساسيات التصوير، تصوير البيوتي، وميكب توتوريال.",
+    "منصة تصويرك لتعلّم التصوير الفوتوغرافي من الصفر للاحتراف — جدة، السعودية. دورات في أساسيات التصوير، تصوير البيوتي، وميكب توتوريال مع نقد تفصيلي وشهادات موثّقة.",
   keywords: [
     "تصويرك",
     "Taswerak",
@@ -32,17 +37,56 @@ export const metadata: Metadata = {
     "تصوير البيوتي",
     "ميكب توتوريال",
     "أحمد زغلول",
+    "تعلم التصوير",
+    "Photography courses Saudi Arabia",
   ],
   authors: [{ name: "Ahmed Zaghloul" }],
+  creator: "Ahmed Zaghloul",
+  publisher: "Taswerak",
   icons: {
     icon: "/logo.svg",
+    apple: "/logo.svg",
+  },
+  manifest: "/manifest.json",
+  alternates: {
+    canonical: "/",
+    languages: { "ar-SA": "/" },
   },
   openGraph: {
-    title: "تصويرك | Taswerak",
-    description: "تعلّم التصوير الفوتوغرافي من الصفر للاحتراف",
+    title: "تصويرك | Taswerak — تعلّم التصوير الفوتوغرافي",
+    description: "دورات تصوير فوتوغرافي احترافية مع نقد تفصيلي وشهادات موثّقة — جدة، السعودية",
     siteName: "تصويرك",
     type: "website",
     locale: "ar_SA",
+    url: "/",
+    images: [
+      {
+        url: "/logo.svg",
+        width: 240,
+        height: 64,
+        alt: "تصويرك — Taswerak",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "تصويرك | Taswerak",
+    description: "تعلّم التصوير الفوتوغرافي من الصفر للاحتراف",
+    images: ["/logo.svg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
   },
 };
 
@@ -59,6 +103,7 @@ export default function RootLayout({
       >
         <SessionProvider>{children}</SessionProvider>
         <CookieConsentBanner />
+        <GoogleAnalytics />
         <Toaster />
         <SonnerToaster position="top-center" dir="rtl" />
       </body>

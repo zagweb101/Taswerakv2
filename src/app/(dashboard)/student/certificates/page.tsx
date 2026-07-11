@@ -130,10 +130,10 @@ export default async function StudentCertificatesPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2 mt-5">
-                  <a href={qrDataUrl || "#"} download={`certificate-${c.certificateNumber}.png`}>
+                  <a href={`/api/certificates/${c.id}/pdf`} target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" className="rounded-xl flex-1" size="sm">
                       <Download className="h-3.5 w-3.5 ml-1" />
-                      تحميل QR
+                      تحميل PDF
                     </Button>
                   </a>
                   <a
