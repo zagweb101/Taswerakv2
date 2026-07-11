@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react";
 import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { ChatbotWidget } from "@/components/chatbot/chatbot-widget";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -106,6 +107,7 @@ export default function RootLayout({
         <CookieConsentBanner />
         <GoogleAnalytics />
         <ServiceWorkerRegister />
+        <ChatbotWidget />
         <Toaster />
         <SonnerToaster position="top-center" dir="rtl" />
       </body>

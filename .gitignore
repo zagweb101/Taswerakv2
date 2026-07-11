@@ -61,3 +61,4 @@ upload/
 *.db
 *.db-journal
 worklog.md
+bun.lock
