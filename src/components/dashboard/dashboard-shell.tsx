@@ -28,7 +28,7 @@ export interface DashboardShellProps {
   impersonatedTargetId?: string | null;
   /** Name of user being impersonated */
   impersonatedTargetName?: string | null;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 export function DashboardShell({

@@ -38,6 +38,7 @@ interface Lesson {
   type: string;
   videoUrl: string | null;
   pdfUrl: string | null;
+  thumbnailUrl?: string | null;
   duration: number;
   order: number;
   isPreview: boolean;

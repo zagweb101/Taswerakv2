@@ -13,7 +13,7 @@ import { writeAudit, notify } from "@/lib/services/audit";
 const metadataSchema = z.object({
   assignmentId: z.string().min(1),
   caption: z.string().max(1000).optional().default(""),
-  exifData: z.record(z.any()).optional().default({}),
+  exifData: z.record(z.string(), z.any()).optional().default({}),
 });
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;

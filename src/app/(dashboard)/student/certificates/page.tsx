@@ -152,7 +152,7 @@ export default async function StudentCertificatesPage() {
                       studentName: session.user.name || "",
                       courseName: c.course?.titleAr || c.course?.title || "",
                       certificateNumber: c.certificateNumber,
-                      issuedAt: c.issuedAt.toISOString(),
+                      issuedAt: c.issuedAt,
                       verifyUrl,
                     })}
                     target="_blank"

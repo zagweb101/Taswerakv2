@@ -60,13 +60,14 @@ export function shareCertificateToLinkedIn(cert: {
   studentName: string;
   courseName: string;
   certificateNumber: string;
-  issuedAt: string;
+  issuedAt: Date | string;
   verifyUrl: string;
 }): string {
+  const issueDateStr = typeof cert.issuedAt === "string" ? cert.issuedAt : cert.issuedAt.toISOString();
   return getLinkedInCertificateLink({
     certName: `${cert.courseName} — تصويرك`,
     certNumber: cert.certificateNumber,
-    issueDate: cert.issuedAt,
+    issueDate: issueDateStr,
     url: cert.verifyUrl,
   });
 }

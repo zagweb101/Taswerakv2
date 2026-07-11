@@ -47,12 +47,14 @@ export interface PaymentResult {
 export interface WebhookPayload {
   gateway: GatewayName;
   transactionId: string;
-  status: "paid" | "failed" | "refunded";
+  status: "pending" | "paid" | "failed" | "refunded";
   amount: number;
   currency: string;
   metadata?: Record<string, any>;
   raw: any;
 }
+
+// ====================================================================
 
 // ====================================================================
 // Manual gateway (bank transfer)

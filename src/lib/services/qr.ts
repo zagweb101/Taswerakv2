@@ -14,7 +14,7 @@ import path from "path";
  */
 export async function generateQrDataUrl(text: string): Promise<string> {
   try {
-    return await QRCode.toDataURL(text, {
+    const result: any = await (QRCode as any).toDataURL(text, {
       errorCorrectionLevel: "M",
       type: "image/png",
       quality: 0.92,
@@ -25,6 +25,7 @@ export async function generateQrDataUrl(text: string): Promise<string> {
         light: "#FFFFFF",
       },
     });
+    return String(result);
   } catch (err) {
     console.error("[qr] generation failed:", err);
     throw err;

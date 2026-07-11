@@ -178,10 +178,10 @@ export function SupportTicketList({ tickets, dbError }: { tickets: Ticket[]; dbE
                           <Clock className="h-3 w-3" />
                           {new Date(t.createdAt).toLocaleDateString("ar-SA")}
                         </span>
-                        {t._count?.replies > 0 && (
+                        {(t._count?.replies ?? 0) > 0 && (
                           <span className="flex items-center gap-1">
                             <MessageSquare className="h-3 w-3" />
-                            {t._count.replies} رد
+                            {t._count?.replies ?? 0} رد
                           </span>
                         )}
                       </div>

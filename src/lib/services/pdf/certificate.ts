@@ -15,9 +15,9 @@ export interface CertificateData {
   certificateNumber: string;
   issuedAt: Date;
   grade?: string | null;
-  verifyToken: string;
+  verifyToken?: string;
   verifyUrl: string;
-  instructorName?: string;
+  instructorName?: string | null;
 }
 
 /**

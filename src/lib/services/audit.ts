@@ -22,7 +22,7 @@ interface AuditInput {
  */
 export async function writeAudit(input: AuditInput): Promise<void> {
   try {
-    await db.auditLog.create({ data: input });
+    await db.auditLog.create({ data: input as any });
   } catch (err) {
     console.warn("[audit] could not write log:", err);
   }

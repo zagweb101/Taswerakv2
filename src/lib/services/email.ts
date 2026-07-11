@@ -22,7 +22,7 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#39;");
 }
 
-interface EmailPayload {
+export interface EmailPayload {
   to: string;
   subject: string;
   html: string;

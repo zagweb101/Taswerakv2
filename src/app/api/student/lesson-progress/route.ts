@@ -65,10 +65,15 @@ export async function GET(req: NextRequest) {
 
     const progress = await db.lessonProgress.findMany({
       where: { courseId },
-      include: {
-        lesson: { select: { id: true, title: true, order: true, duration: true } },
-      },
     });
+
+    // Fetch lesson titles separately
+    const lessonIds = [...new Set(progress.map((p) => p.lessonId))];
+    const lessons = await db.lesson.findMany({
+      where: { id: { in: lessonIds } },
+      select: { id: true, title: true, order: true, duration: true },
+    });
+    const lessonMap = new Map(lessons.map((l) => [l.id, l]));
 
     // Aggregate per lesson
     const byLesson = progress.reduce((acc, p) => {
@@ -76,7 +81,7 @@ export async function GET(req: NextRequest) {
       if (!acc[key]) {
         acc[key] = {
           lessonId: key,
-          lessonTitle: p.lesson?.title || "",
+          lessonTitle: lessonMap.get(key)?.title || "",
           totalWatched: 0,
           completedCount: 0,
           totalStudents: 0,
