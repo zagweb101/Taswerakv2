@@ -9135,7 +9135,36 @@ async function main() {
                     description: "تعريف عام بمحتويات الدورة وأهدافها",
                     type: "VIDEO",
                     order: 0,
-                    isPreview: true
+                    isPreview: true,
+                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                    duration: 180
+                  }
+                ]
+              }
+            },
+            {
+              title: "الأساسيات",
+              titleAr: "الأساسيات",
+              order: 1,
+              lessons: {
+                create: [
+                  {
+                    title: "تشريح الكاميرا",
+                    slug: "camera-anatomy",
+                    description: "تعرّف على أجزاء الكاميرا الرئيسية وكيفية ضبطها",
+                    type: "VIDEO",
+                    order: 0,
+                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                    duration: 600
+                  },
+                  {
+                    title: "مثلث التعريض",
+                    slug: "exposure-triangle",
+                    description: "ISO، سرعة الغالق، فتحة العدسة — كيف تتفاعل معاً",
+                    type: "VIDEO",
+                    order: 1,
+                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                    duration: 720
                   }
                 ]
               }
@@ -9145,6 +9174,101 @@ async function main() {
       }
     });
     console.log(`✅ Course: ${c.titleAr}`);
+  }
+  const firstCourse = await prisma.course.findFirst({
+    where: { slug: "photography-fundamentals" },
+    include: { sections: { include: { lessons: true } } }
+  });
+  if (firstCourse) {
+    const existingEnr = await prisma.enrollment.findUnique({
+      where: { studentId_courseId: { studentId: student.id, courseId: firstCourse.id } }
+    });
+    if (!existingEnr) {
+      const enrollment = await prisma.enrollment.create({
+        data: {
+          studentId: student.id,
+          courseId: firstCourse.id,
+          status: "ACTIVE",
+          progress: 33
+        }
+      });
+      console.log(`✅ Enrollment: ${student.name} → ${firstCourse.titleAr}`);
+      const secondLesson = firstCourse.sections?.[1]?.lessons?.[0];
+      if (secondLesson) {
+        const assignment = await prisma.assignment.create({
+          data: {
+            courseId: firstCourse.id,
+            lessonId: secondLesson.id,
+            title: "تمرين: صورة بإضاءة طبيعية",
+            description: "التقط صورة بورتريه باستخدام الإضاءة الطبيعية من نافذة",
+            instructions: "استخدم الإضاءة الجانبية من نافذة. اضبط ISO على 200، f/2.8، 1/125s. ارفع الصورة ببيانات EXIF الأصلية.",
+            requiresExif: true,
+            maxAttempts: 3,
+            order: 0,
+            isPublished: true
+          }
+        });
+        console.log(`✅ Assignment: ${assignment.title}`);
+        const existingSub = await prisma.submission.findFirst({
+          where: { assignmentId: assignment.id, studentId: student.id }
+        });
+        if (!existingSub) {
+          await prisma.submission.create({
+            data: {
+              assignmentId: assignment.id,
+              studentId: student.id,
+              enrollmentId: enrollment.id,
+              lessonId: secondLesson.id,
+              imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800",
+              caption: "صورة بورتريه بإضاءة النافذة الجانبية",
+              exifData: {
+                camera: "Sony A7III",
+                lens: "85mm f/1.8",
+                iso: 200,
+                aperture: "f/2.8",
+                shutter: "1/125s"
+              },
+              status: "SUBMITTED",
+              attemptNumber: 1
+            }
+          });
+          console.log(`✅ Submission: sample for critique`);
+        }
+      }
+    }
+    const secondCourse = await prisma.course.findFirst({
+      where: { slug: "beauty-photography-12-lectures" }
+    });
+    if (secondCourse) {
+      const existingCert = await prisma.certificate.findFirst({
+        where: { studentId: student.id, courseId: secondCourse.id }
+      });
+      if (!existingCert) {
+        const enrollment2 = await prisma.enrollment.create({
+          data: {
+            studentId: student.id,
+            courseId: secondCourse.id,
+            status: "COMPLETED",
+            progress: 100,
+            completedAt: new Date
+          }
+        }).catch(() => null);
+        if (enrollment2) {
+          await prisma.certificate.create({
+            data: {
+              enrollmentId: enrollment2.id,
+              studentId: student.id,
+              courseId: secondCourse.id,
+              certificateNumber: `TAS-2026-000001`,
+              grade: "ممتاز",
+              verifyToken: `tas_verify_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`,
+              status: "ISSUED"
+            }
+          });
+          console.log(`✅ Certificate: TAS-2026-000001 for ${secondCourse.titleAr}`);
+        }
+      }
+    }
   }
   const testimonials = [
     {
