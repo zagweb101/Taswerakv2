@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { chatbotSchema } from "@/lib/validations";
+import { rateLimit, getClientIP } from "@/lib/services/rate-limit";
 
 // Use shared schema from validations/index.ts
 const schema = chatbotSchema;
@@ -52,6 +53,16 @@ export async function POST(req: NextRequest) {
       );
     }
     const { message, history } = parsed.data;
+
+    // Rate limit: 20 messages per hour per IP (chatbot is public)
+    const ip = getClientIP(req);
+    const rl = rateLimit({ key: `chatbot:${ip}`, limit: 20, windowMs: 60 * 60 * 1000 });
+    if (!rl.success) {
+      return NextResponse.json(
+        { ok: false, error: "محاولات كثيرة. حاول بعد ساعة." },
+        { status: 429 }
+      );
+    }
 
     // Try Z.AI SDK
     try {

@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Ticket,
   MessageSquare,
+  Bell,
 } from "lucide-react";
 import type { NavItem } from "@/components/dashboard/dashboard-shell";
 
@@ -19,5 +20,6 @@ export const adminNav: NavItem[] = [
   { href: "/admin/cms", label: "إدارة المحتوى", icon: <FileText className="h-4 w-4" /> },
   { href: "/admin/audit", label: "سجل التدقيق", icon: <ScrollText className="h-4 w-4" /> },
   { href: "/admin/support", label: "تذاكر الدعم", icon: <MessageSquare className="h-4 w-4" /> },
+  { href: "/admin/notifications", label: "الإشعارات", icon: <Bell className="h-4 w-4" /> },
   { href: "/admin/settings", label: "الإعدادات", icon: <Settings className="h-4 w-4" /> },
 ];
