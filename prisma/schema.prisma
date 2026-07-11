@@ -122,6 +122,7 @@ model User {
   quizAttempts    QuizAttempt[]
   auditLogs       AuditLog[]
   notifications   Notification[]
+  supportTickets  SupportTicket[]
 
   // Per-user settings (one-to-one)
   settings UserSettings?
@@ -197,13 +198,14 @@ model Course {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  instructor   User          @relation("InstructorCourses", fields: [instructorId], references: [id])
+  instructor   User            @relation("InstructorCourses", fields: [instructorId], references: [id])
   sections     Section[]
   lessons      Lesson[]
   enrollments  Enrollment[]
   assignments  Assignment[]
   reviews      Review[]
   certificates Certificate[]
+  tickets      SupportTicket[] @relation("TicketCourse")
 
   @@index([instructorId])
   @@index([status])
@@ -562,4 +564,42 @@ model Coupon {
   @@index([code])
   @@index([courseId])
   @@index([isActive])
+}
+
+// ====================================================================
+// SUPPORT TICKETS — student support system
+// ====================================================================
+
+model SupportTicket {
+  id        String   @id @default(cuid())
+  studentId String
+  courseId  String?
+  subject   String
+  body      String   @db.Text
+  category  String   @default("GENERAL")
+  priority  String   @default("NORMAL")
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course?       @relation("TicketCourse", fields: [courseId], references: [id], onDelete: SetNull)
+  replies TicketReply[]
+
+  @@index([studentId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model TicketReply {
+  id         String   @id @default(cuid())
+  ticketId   String
+  authorId   String
+  authorRole String   @default("STUDENT")
+  body       String   @db.Text
+  createdAt  DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
 }

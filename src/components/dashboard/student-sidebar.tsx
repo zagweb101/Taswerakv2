@@ -5,6 +5,8 @@ import {
   Award,
   Settings,
   Bell,
+  MessageSquare,
+  Gift,
 } from "lucide-react";
 import type { NavItem } from "@/components/dashboard/dashboard-shell";
 
@@ -13,6 +15,8 @@ export const studentNav: NavItem[] = [
   { href: "/student/courses", label: "دوراتي", icon: <BookOpen className="h-4 w-4" /> },
   { href: "/student/payments", label: "إيصالات الدفع", icon: <ReceiptText className="h-4 w-4" /> },
   { href: "/student/certificates", label: "شهاداتي", icon: <Award className="h-4 w-4" /> },
+  { href: "/student/referrals", label: "الإحالات", icon: <Gift className="h-4 w-4" /> },
+  { href: "/student/support", label: "الدعم الفني", icon: <MessageSquare className="h-4 w-4" /> },
   { href: "/student/notifications", label: "الإشعارات", icon: <Bell className="h-4 w-4" /> },
   { href: "/student/settings", label: "الإعدادات", icon: <Settings className="h-4 w-4" /> },
 ];

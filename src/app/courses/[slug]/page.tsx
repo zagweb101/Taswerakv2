@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
+import { ReviewsSection } from "@/components/student/review-form/reviews-section";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { Button } from "@/components/ui/button";
@@ -412,6 +413,9 @@ export default async function CourseDetailPage({
             </div>
           </section>
         )}
+
+        {/* Reviews section */}
+        <ReviewsSection courseId={dbCourse?.id || ""} />
 
         {/* CTA */}
         <section className="container mx-auto px-4 lg:px-8 pb-16">

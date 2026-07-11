@@ -14,6 +14,7 @@ const schema = z.object({
   email: z.string().email("بريد غير صحيح"),
   password: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
   phone: z.string().optional(),
+  referralCode: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, email, password, phone } = parsed.data;
+    const { name, email, password, phone, referralCode } = parsed.data;
     const normalizedEmail = email.toLowerCase().trim();
 
     const exists = await db.user.findUnique({
@@ -54,6 +55,9 @@ export async function POST(req: Request) {
 
     const hash = await bcrypt.hash(password, 12);
 
+    // Generate referral code for new user (first 4 chars of name + random)
+    const userReferralCode = `${(name || "TAS").replace(/\s/g, "").slice(0, 4).toUpperCase()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+
     const user = await db.user.create({
       data: {
         name,
@@ -62,8 +66,50 @@ export async function POST(req: Request) {
         phone: phone || null,
         role: "STUDENT",
       },
-      select: { id: true, email: true, role: true },
+      select: { id: true, email: true, role: true, name: true },
     });
+
+    // Store referral code + referral relationship in UserSettings
+    const settings: any = { referralCode: userReferralCode, referrals: [], credit: 0 };
+
+    // If came via referral, find referrer + add relationship
+    if (referralCode) {
+      try {
+        // Find user with this referral code in their settings
+        const allSettings = await db.userSettings.findMany({
+          where: { data: { path: ["referralCode"], equals: referralCode } },
+          select: { userId: true },
+        });
+        if (allSettings.length > 0) {
+          const referrerId = allSettings[0].userId;
+          settings.referredBy = referrerId;
+          // Give 50 SAR credit to referrer
+          const referrerSettings = await db.userSettings.findUnique({
+            where: { userId: referrerId },
+          });
+          if (referrerSettings) {
+            const referrerData: any = referrerSettings.data || {};
+            referrerData.credit = (referrerData.credit || 0) + 50;
+            referrerData.referrals = [...(referrerData.referrals || []), { userId: user.id, name, date: new Date().toISOString() }];
+            await db.userSettings.update({
+              where: { userId: referrerId },
+              data: { data: referrerData },
+            });
+          }
+        }
+      } catch {
+        // ignore referral errors
+      }
+    }
+
+    // Save new user's settings
+    try {
+      await db.userSettings.create({
+        data: { userId: user.id, data: settings },
+      });
+    } catch {
+      // settings creation optional
+    }
 
     return NextResponse.json({ ok: true, user });
   } catch (err) {

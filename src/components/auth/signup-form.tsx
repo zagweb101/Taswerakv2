@@ -28,10 +28,14 @@ export function SignupForm() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
+      // Check for referral code in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const refCode = urlParams.get("ref");
+
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, referralCode: refCode || undefined }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
