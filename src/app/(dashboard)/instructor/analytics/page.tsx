@@ -57,7 +57,7 @@ export default async function InstructorAnalyticsPage() {
     ]);
     stats = {
       courses,
-      students,
+      students: studentsAgg,
       revenue: Number(revenueAgg._sum.amount || 0),
       pending,
     };
