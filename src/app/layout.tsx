@@ -6,6 +6,7 @@ import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { SessionProvider } from "next-auth/react";
 import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -104,6 +105,7 @@ export default function RootLayout({
         <SessionProvider>{children}</SessionProvider>
         <CookieConsentBanner />
         <GoogleAnalytics />
+        <ServiceWorkerRegister />
         <Toaster />
         <SonnerToaster position="top-center" dir="rtl" />
       </body>

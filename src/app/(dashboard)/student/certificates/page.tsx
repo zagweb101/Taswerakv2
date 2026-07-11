@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { generateQrDataUrl } from "@/lib/services/qr";
-import { Award, Download, QrCode, Calendar, Share2 } from "lucide-react";
+import { shareCertificateToLinkedIn } from "@/lib/services/integrations";
+import { Award, Download, QrCode, Calendar, Share2, Linkedin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
@@ -129,11 +130,11 @@ export default async function StudentCertificatesPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 mt-5">
+                <div className="grid grid-cols-3 gap-2 mt-5">
                   <a href={`/api/certificates/${c.id}/pdf`} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" className="rounded-xl flex-1" size="sm">
+                    <Button variant="outline" className="rounded-xl w-full" size="sm">
                       <Download className="h-3.5 w-3.5 ml-1" />
-                      تحميل PDF
+                      PDF
                     </Button>
                   </a>
                   <a
@@ -141,9 +142,25 @@ export default async function StudentCertificatesPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Button variant="outline" className="rounded-xl flex-1" size="sm">
+                    <Button variant="outline" className="rounded-xl w-full" size="sm">
                       <Share2 className="h-3.5 w-3.5 ml-1" />
-                      صفحة التحقق
+                      تحقق
+                    </Button>
+                  </a>
+                  <a
+                    href={shareCertificateToLinkedIn({
+                      studentName: session.user.name || "",
+                      courseName: c.course?.titleAr || c.course?.title || "",
+                      certificateNumber: c.certificateNumber,
+                      issuedAt: c.issuedAt.toISOString(),
+                      verifyUrl,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="outline" className="rounded-xl w-full text-[#0A66C2]" size="sm">
+                      <Linkedin className="h-3.5 w-3.5 ml-1" />
+                      LinkedIn
                     </Button>
                   </a>
                 </div>

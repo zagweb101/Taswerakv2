@@ -23,6 +23,7 @@ export function useLessonProgress({ courseId, lessonId, onProgressSaved }: Props
 
   const saveProgress = async (completed: boolean) => {
     try {
+      // Save enrollment-level progress
       const res = await fetch("/api/student/progress", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -32,6 +33,15 @@ export function useLessonProgress({ courseId, lessonId, onProgressSaved }: Props
       if (res.ok && data.ok && onProgressSaved) {
         onProgressSaved(data.progress);
       }
+
+      // Also save lesson-level tracking (for analytics/heatmap)
+      const v = videoElRef.current;
+      const watchedSeconds = v ? Math.floor(v.currentTime) : 0;
+      await fetch("/api/student/lesson-progress", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lessonId, courseId, watchedSeconds, completed }),
+      }).catch(() => {});
     } catch {
       // Silent fail — don't disrupt video playback
     }

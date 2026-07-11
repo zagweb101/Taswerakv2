@@ -1,0 +1,32 @@
+{
+  "name": "تصويرك | Taswerak",
+  "short_name": "تصويرك",
+  "description": "منصة تعلّم التصوير الفوتوغرافي من الصفر للاحتراف",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0A9ED9",
+  "orientation": "portrait-primary",
+  "dir": "rtl",
+  "lang": "ar",
+  "categories": ["education", "photography"],
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "دوراتي",
+      "url": "/student/courses",
+      "description": "عرض دوراتي"
+    },
+    {
+      "name": "تسجيل الدخول",
+      "url": "/login"
+    }
+  ]
+}

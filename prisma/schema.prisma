@@ -19,6 +19,7 @@ datasource db {
 // ====================================================================
 
 enum Role {
+  GUARDIAN
   STUDENT
   INSTRUCTOR
   ADMIN
@@ -602,4 +603,41 @@ model TicketReply {
   ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   @@index([ticketId])
+}
+
+// ====================================================================
+// LESSON PROGRESS — per-lesson watching tracking
+// ====================================================================
+
+model LessonProgress {
+  id             String    @id @default(cuid())
+  studentId      String
+  lessonId       String
+  courseId       String
+  watchedSeconds Int       @default(0)
+  completedAt    DateTime?
+  lastWatchedAt  DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([studentId, lessonId])
+  @@index([studentId])
+  @@index([lessonId])
+  @@index([courseId])
+}
+
+// ====================================================================
+// GUARDIAN — links a guardian to a minor student
+// ====================================================================
+
+model GuardianLink {
+  id         String   @id @default(cuid())
+  guardianId String
+  studentId  String
+  relation   String   @default("PARENT") // PARENT | SIBLING | OTHER
+  createdAt  DateTime @default(now())
+
+  @@unique([guardianId, studentId])
+  @@index([guardianId])
+  @@index([studentId])
 }

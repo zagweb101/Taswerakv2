@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { MapPin, Mail, Phone, Instagram, Youtube, Twitter } from "lucide-react";
+import { MapPin, Mail, Phone, Instagram, Youtube, Twitter, MessageCircle } from "lucide-react";
 import { brandGradientText, brand } from "@/lib/brand";
 import { getCmsValues } from "@/lib/services/cms";
+import { getSupportWhatsAppLink } from "@/lib/services/whatsapp";
 
 export async function LandingFooter() {
   const cms = await getCmsValues(["footer_note", "contact_email", "contact_phone", "city"]);
@@ -70,6 +71,9 @@ export async function LandingFooter() {
               </li>
             </ul>
             <div className="flex items-center gap-2 pt-2">
+              <SocialIcon href={getSupportWhatsAppLink()} label="WhatsApp">
+                <MessageCircle className="h-4 w-4" />
+              </SocialIcon>
               <SocialIcon href="#" label="Instagram">
                 <Instagram className="h-4 w-4" />
               </SocialIcon>
