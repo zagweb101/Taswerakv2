@@ -122,7 +122,7 @@ export function CritiqueInterface({
             className="relative inline-block w-full cursor-crosshair rounded-xl overflow-hidden border border-border bg-muted/30"
             onClick={onImageClick}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             <img
               ref={imgRef}
               src={imageUrl}

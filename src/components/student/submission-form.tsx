@@ -146,7 +146,7 @@ export function SubmissionForm({
             <Label>صورة عملك *</Label>
             {preview ? (
               <div className="relative rounded-xl overflow-hidden border border-border">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img src={preview} alt="معاينة" className="w-full max-h-96 object-contain bg-muted/30" />
                 <button
                   type="button"

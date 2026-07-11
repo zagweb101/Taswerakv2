@@ -126,7 +126,7 @@ export function CheckoutForm({
             <Label>صورة الإيصال *</Label>
             {preview ? (
               <div className="relative rounded-xl overflow-hidden border border-border">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img src={preview} alt="إيصال" className="w-full max-h-64 object-contain bg-muted/30" />
                 <button
                   type="button"

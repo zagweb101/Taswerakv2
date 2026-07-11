@@ -6,15 +6,10 @@
 // ====================================================================
 
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { chatbotSchema } from "@/lib/validations";
 
-const schema = z.object({
-  message: z.string().min(1, "الرسالة مطلوبة").max(1000),
-  history: z.array(z.object({
-    role: z.enum(["user", "assistant"]),
-    content: z.string(),
-  })).max(10).optional().default([]),
-});
+// Use shared schema from validations/index.ts
+const schema = chatbotSchema;
 
 // Taswerak knowledge base — injected as system prompt
 const SYSTEM_PROMPT = `أنت "تصويرك بوت" — المساعد الذكي لمنصة تصويرك لتعليم التصوير الفوتوغرافي.

@@ -124,7 +124,7 @@ export default async function InstructorCritiquesPage() {
             <Card key={s.id} className="rounded-2xl border-border/60 overflow-hidden hover:shadow-md transition-shadow">
               {/* Image */}
               <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src={s.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Cg%3E%3Ccircle cx='200' cy='150' r='40' fill='%23ddd'/%3E%3Cpath d='M170 200 Q200 230 230 200 L230 240 L170 240 Z' fill='%23ddd'/%3E%3C/g%3E%3C/svg%3E"}
                   alt={s.caption || "عمل طالب"}

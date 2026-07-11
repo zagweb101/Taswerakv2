@@ -1,44 +1,23 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-const enrollmentStatusMap: Record<string, { label: string; cls: string }> = {
-  PENDING_PAYMENT: { label: "بانتظار الدفع", cls: "bg-amber-100 text-amber-700" },
-  PENDING_APPROVAL: { label: "قيد المراجعة", cls: "bg-blue-100 text-blue-700" },
-  ACTIVE: { label: "نشط", cls: "bg-emerald-100 text-emerald-700" },
-  COMPLETED: { label: "مكتمل", cls: "bg-teal-100 text-teal-700" },
-  EXPIRED: { label: "منتهي", cls: "bg-red-100 text-red-700" },
-  CANCELLED: { label: "ملغى", cls: "bg-zinc-100 text-zinc-700" },
-  REFUNDED: { label: "مُسترد", cls: "bg-purple-100 text-purple-700" },
-};
-
-const paymentStatusMap: Record<string, { label: string; cls: string }> = {
-  PENDING: { label: "قيد المراجعة", cls: "bg-amber-100 text-amber-700" },
-  APPROVED: { label: "معتمد", cls: "bg-emerald-100 text-emerald-700" },
-  REJECTED: { label: "مرفوض", cls: "bg-red-100 text-red-700" },
-  NEEDS_REVIEW: { label: "يحتاج مراجعة", cls: "bg-blue-100 text-blue-700" },
-};
-
-const submissionStatusMap: Record<string, { label: string; cls: string }> = {
-  SUBMITTED: { label: "مُسلَّم", cls: "bg-blue-100 text-blue-700" },
-  UNDER_REVIEW: { label: "قيد النقد", cls: "bg-amber-100 text-amber-700" },
-  CRITIQUED: { label: "تم النقد", cls: "bg-teal-100 text-teal-700" },
-  RESUBMITTED: { label: "إعادة تسليم", cls: "bg-purple-100 text-purple-700" },
-  APPROVED: { label: "معتمد", cls: "bg-emerald-100 text-emerald-700" },
-};
+import { statusLabels, statusBadgeClasses } from "@/lib/helpers";
 
 export function EnrollmentStatusBadge({ status }: { status: string }) {
-  const m = enrollmentStatusMap[status] || { label: status, cls: "bg-muted text-muted-foreground" };
-  return <Badge className={cn(m.cls, "hover:opacity-90")}>{m.label}</Badge>;
+  const label = (statusLabels.enrollment as any)[status] || status;
+  const cls = (statusBadgeClasses.enrollment as any)[status] || "bg-muted text-muted-foreground";
+  return <Badge className={cn(cls, "hover:opacity-90")}>{label}</Badge>;
 }
 
 export function PaymentStatusBadge({ status }: { status: string }) {
-  const m = paymentStatusMap[status] || { label: status, cls: "bg-muted text-muted-foreground" };
-  return <Badge className={cn(m.cls, "hover:opacity-90")}>{m.label}</Badge>;
+  const label = (statusLabels.payment as any)[status] || status;
+  const cls = (statusBadgeClasses.payment as any)[status] || "bg-muted text-muted-foreground";
+  return <Badge className={cn(cls, "hover:opacity-90")}>{label}</Badge>;
 }
 
 export function SubmissionStatusBadge({ status }: { status: string }) {
-  const m = submissionStatusMap[status] || { label: status, cls: "bg-muted text-muted-foreground" };
-  return <Badge className={cn(m.cls, "hover:opacity-90")}>{m.label}</Badge>;
+  const label = (statusLabels.submission as any)[status] || status;
+  const cls = (statusBadgeClasses.submission as any)[status] || "bg-muted text-muted-foreground";
+  return <Badge className={cn(cls, "hover:opacity-90")}>{label}</Badge>;
 }
 
 export function ProgressRing({ value }: { value: number }) {

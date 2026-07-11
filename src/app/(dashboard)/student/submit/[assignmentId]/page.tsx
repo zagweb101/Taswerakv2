@@ -158,7 +158,7 @@ export default async function SubmitAssignmentPage({ params }: PageProps) {
             </div>
             {existingSubmission.imageUrl && (
               <div className="rounded-xl overflow-hidden border border-border">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src={existingSubmission.imageUrl}
                   alt="عملك السابق"

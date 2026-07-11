@@ -6,16 +6,13 @@
 // ====================================================================
 
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { createReviewSchema } from "@/lib/validations";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { writeAudit } from "@/lib/services/audit";
 
-const createSchema = z.object({
-  courseId: z.string().min(1),
-  rating: z.number().min(1).max(5),
-  comment: z.string().max(2000).optional().default(""),
-});
+// Use shared schema from validations/index.ts
+const createSchema = createReviewSchema;
 
 export async function POST(req: NextRequest) {
   try {

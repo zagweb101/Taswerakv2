@@ -74,17 +74,26 @@ export function useRealtimeNotifications(enabled: boolean = true) {
   useEffect(() => {
     if (!enabled) return;
 
-    // Initial fetch
-    fetchNotifications();
+    // Use a flag to avoid setState after unmount
+    let mounted = true;
+
+    const doFetch = () => {
+      if (mounted) fetchNotifications();
+    };
+
+    // Initial fetch (deferred to avoid synchronous state update in effect)
+    const timer = setTimeout(doFetch, 100);
 
     // Poll every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
+    const interval = setInterval(doFetch, 30000);
 
     // Also refetch when tab regains focus
-    const onFocus = () => fetchNotifications();
+    const onFocus = () => doFetch();
     window.addEventListener("focus", onFocus);
 
     return () => {
+      mounted = false;
+      clearTimeout(timer);
       clearInterval(interval);
       window.removeEventListener("focus", onFocus);
     };

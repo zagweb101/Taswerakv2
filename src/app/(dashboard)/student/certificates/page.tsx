@@ -113,7 +113,7 @@ export default async function StudentCertificatesPage() {
                 {/* Real QR code */}
                 <div className="mt-5 p-4 rounded-xl bg-muted/30 flex items-center gap-3">
                   {qrDataUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
+                     
                     <img
                       src={qrDataUrl}
                       alt="QR code للتحقق من الشهادة"

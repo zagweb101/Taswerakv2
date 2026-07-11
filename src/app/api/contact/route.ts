@@ -4,19 +4,14 @@
 // ====================================================================
 
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { contactSchema } from "@/lib/validations";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/services/email";
 import { rateLimitPresets, getClientIP } from "@/lib/services/rate-limit";
 import { writeAudit } from "@/lib/services/audit";
 
-const schema = z.object({
-  name: z.string().min(2, "الاسم قصير جداً"),
-  email: z.string().email("بريد غير صحيح"),
-  phone: z.string().max(20).optional(),
-  subject: z.string().min(2, "الموضوع مطلوب"),
-  message: z.string().min(10, "الرسالة قصيرة جداً").max(5000),
-});
+// Use shared schema from validations/index.ts
+const schema = contactSchema;
 
 export async function POST(req: NextRequest) {
   try {
