@@ -56,14 +56,16 @@ export default async function AdminAuditPage() {
   if (!session?.user?.id) return null;
 
   let logs: any[] = [];
+  let dbError = false;
   try {
     logs = await db.auditLog.findMany({
       include: { user: { select: { name: true, email: true } } },
       orderBy: { createdAt: "desc" },
       take: 100,
     });
-  } catch {
-    logs = mockLogs;
+  } catch (err) {
+    console.error("[audit-page] DB error:", err);
+    dbError = true;
   }
 
   return (
@@ -113,7 +115,9 @@ export default async function AdminAuditPage() {
         <CardContent>
           {logs.length === 0 ? (
             <div className="text-center py-10 text-sm text-muted-foreground">
-              لا توجد أحداث مسجّلة بعد
+              {dbError
+                ? "تعذّر تحميل السجل — تحقق من اتصال قاعدة البيانات"
+                : "لا توجد أحداث مسجّلة بعد — ستظهر هنا الإجراءات الحساسة (تسجيل دخول، اعتماد مدفوعات، تعديلات، إلخ)"}
             </div>
           ) : (
             <div className="relative">

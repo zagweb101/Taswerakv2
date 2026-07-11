@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { generateQrDataUrl } from "@/lib/services/qr";
 import { Award, Download, QrCode, Calendar, Share2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,17 @@ export default async function StudentCertificatesPage() {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
-          {certs.map((c) => (
+          {certs.map(async (c) => {
+            // Generate real QR code linking to verification page
+            const verifyUrl = `${process.env.NEXTAUTH_URL || ""}/verify/${c.verifyToken}`;
+            let qrDataUrl: string | null = null;
+            try {
+              qrDataUrl = await generateQrDataUrl(verifyUrl);
+            } catch {
+              // QR generation failed — show fallback icon
+            }
+
+            return (
             <Card key={c.id} className="rounded-2xl border-border/60 overflow-hidden hover:shadow-lg transition-shadow">
               {/* Header strip */}
               <div className="brand-gradient h-2" />
@@ -98,11 +109,20 @@ export default async function StudentCertificatesPage() {
                   </div>
                 </div>
 
-                {/* QR placeholder */}
+                {/* Real QR code */}
                 <div className="mt-5 p-4 rounded-xl bg-muted/30 flex items-center gap-3">
-                  <div className="h-14 w-14 rounded-lg bg-white border border-border/60 flex items-center justify-center">
-                    <QrCode className="h-9 w-9 text-foreground" />
-                  </div>
+                  {qrDataUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={qrDataUrl}
+                      alt="QR code للتحقق من الشهادة"
+                      className="h-20 w-20 rounded-lg bg-white border border-border/60"
+                    />
+                  ) : (
+                    <div className="h-20 w-20 rounded-lg bg-white border border-border/60 flex items-center justify-center">
+                      <QrCode className="h-12 w-12 text-foreground" />
+                    </div>
+                  )}
                   <div className="flex-1 text-xs text-muted-foreground">
                     امسح رمز QR للتحقق من صحة الشهادة عبر نظام تصويرك
                   </div>
@@ -110,18 +130,27 @@ export default async function StudentCertificatesPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2 mt-5">
-                  <Button variant="outline" className="rounded-xl flex-1" size="sm">
-                    <Download className="h-3.5 w-3.5 ml-1" />
-                    تحميل PDF
-                  </Button>
-                  <Button variant="outline" className="rounded-xl flex-1" size="sm">
-                    <Share2 className="h-3.5 w-3.5 ml-1" />
-                    مشاركة
-                  </Button>
+                  <a href={qrDataUrl || "#"} download={`certificate-${c.certificateNumber}.png`}>
+                    <Button variant="outline" className="rounded-xl flex-1" size="sm">
+                      <Download className="h-3.5 w-3.5 ml-1" />
+                      تحميل QR
+                    </Button>
+                  </a>
+                  <a
+                    href={verifyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="outline" className="rounded-xl flex-1" size="sm">
+                      <Share2 className="h-3.5 w-3.5 ml-1" />
+                      صفحة التحقق
+                    </Button>
+                  </a>
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

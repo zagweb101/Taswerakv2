@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { MapPin, Mail, Phone, Instagram, Youtube, Twitter } from "lucide-react";
 import { brandGradientText, brand } from "@/lib/brand";
+import { getCmsValues } from "@/lib/services/cms";
 
-export function LandingFooter() {
+export async function LandingFooter() {
+  const cms = await getCmsValues(["footer_note", "contact_email", "contact_phone", "city"]);
+  const footerNote = cms.footer_note || `© 2026 ${brand.name} — جميع الحقوق محفوظة`;
+  const contactEmail = cms.contact_email || "info@taswerak.com";
+  const contactPhone = cms.contact_phone || "+966 5X XXX XXXX";
+  const city = cms.city || brand.city;
   return (
     <footer className="mt-20 border-t border-border/60 bg-card/40">
       <div className="container mx-auto px-4 lg:px-8 py-12">
@@ -23,7 +29,7 @@ export function LandingFooter() {
             </p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 text-[#00A3AA]" />
-              {brand.city}، {brand.country}
+              {city}، {brand.country}
             </div>
           </div>
 
@@ -56,11 +62,11 @@ export function LandingFooter() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-[#0A9ED9]" />
-                <span dir="ltr">info@taswerak.com</span>
+                <span dir="ltr">{contactEmail}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-[#00A3AA]" />
-                <span dir="ltr">+966 5X XXX XXXX</span>
+                <span dir="ltr">{contactPhone}</span>
               </li>
             </ul>
             <div className="flex items-center gap-2 pt-2">
@@ -78,7 +84,7 @@ export function LandingFooter() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-border/40 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-muted-foreground">
-          <p>© 2026 {brand.name} — جميع الحقوق محفوظة</p>
+          <p>{footerNote}</p>
           <div className="flex gap-4">
             <Link href="#" className="hover:text-foreground">سياسة الخصوصية</Link>
             <Link href="#" className="hover:text-foreground">الشروط والأحكام</Link>

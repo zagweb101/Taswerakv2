@@ -2,8 +2,12 @@ import Link from "next/link";
 import { ArrowLeft, Play, Sparkles, Camera, Award } from "lucide-react";
 import { brandGradientText } from "@/lib/brand";
 import { Button } from "@/components/ui/button";
+import { getCmsValues } from "@/lib/services/cms";
 
-export function LandingHero() {
+export async function LandingHero() {
+  const cms = await getCmsValues(["hero_title", "hero_subtitle"]);
+  const heroTitle = cms.hero_title || "تعلّم التصوير الفوتوغرافي من الصفر للاحتراف";
+  const heroSubtitle = cms.hero_subtitle || "دورات مباشرة مع المدرّب أحمد زغلول — أساسيات، بيوتي، وميكب توتوريال.";
   return (
     <section className="relative overflow-hidden">
       {/* Background blobs */}
@@ -22,16 +26,11 @@ export function LandingHero() {
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight">
-              تعلّم التصوير الفوتوغرافي
-              <br />
-              <span className={brandGradientText}>من الصفر للاحتراف</span>
+              {heroTitle}
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              دورات مباشرة مع المدرّب{" "}
-              <span className="font-semibold text-foreground">أحمد زغلول</span> —
-              أساسيات التصوير، تصوير البيوتي في 12 محاضرة، وميكب توتوريال.
-              تعلّم عملي بنقد تفصيلي على صورك وشهادات قابلة للتحقق.
+              {heroSubtitle}
             </p>
 
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">

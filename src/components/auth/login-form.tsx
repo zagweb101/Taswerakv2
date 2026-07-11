@@ -110,6 +110,15 @@ export function LoginForm() {
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "تسجيل الدخول"}
           </Button>
 
+          <div className="text-center">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              نسيت كلمة المرور؟
+            </Link>
+          </div>
+
           <div className="text-center text-sm text-muted-foreground">
             ليس لديك حساب؟{" "}
             <Link

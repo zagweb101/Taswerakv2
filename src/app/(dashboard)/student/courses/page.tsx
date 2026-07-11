@@ -77,6 +77,16 @@ export default async function StudentCoursesPage() {
             category: true,
             durationHours: true,
             thumbnailUrl: true,
+            sections: {
+              orderBy: { order: "asc" },
+              select: {
+                lessons: {
+                  orderBy: { order: "asc" },
+                  select: { id: true },
+                  take: 1,
+                },
+              },
+            },
           },
         },
       },
@@ -85,6 +95,16 @@ export default async function StudentCoursesPage() {
   } catch {
     enrollments = mockEnrollments;
   }
+
+  // Helper: find first lesson id from enrollment
+  const getFirstLessonId = (enr: any): string | null => {
+    const sections = enr.course?.sections;
+    if (!sections || sections.length === 0) return null;
+    for (const s of sections) {
+      if (s.lessons && s.lessons.length > 0) return s.lessons[0].id;
+    }
+    return null;
+  };
 
   const active = enrollments.filter((e) => e.status === "ACTIVE");
   const completed = enrollments.filter((e) => e.status === "COMPLETED");
@@ -172,14 +192,20 @@ export default async function StudentCoursesPage() {
                   <EnrollmentStatusBadge status={enr.status} />
 
                   {/* Action */}
-                  {enr.status === "ACTIVE" && (
-                    <Link href={`/courses/${enr.course.slug}`}>
-                      <Button size="sm" className="rounded-xl brand-gradient text-white hover:opacity-90">
-                        متابعة
-                        <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-                      </Button>
-                    </Link>
-                  )}
+                  {enr.status === "ACTIVE" && (() => {
+                    const firstLessonId = getFirstLessonId(enr);
+                    const targetHref = firstLessonId
+                      ? `/student/learn/${enr.course.id}/${firstLessonId}`
+                      : `/courses/${enr.course.slug}`;
+                    return (
+                      <Link href={targetHref}>
+                        <Button size="sm" className="rounded-xl brand-gradient text-white hover:opacity-90">
+                          متابعة
+                          <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+                        </Button>
+                      </Link>
+                    );
+                  })()}
                   {enr.status === "COMPLETED" && (
                     <Link href="/student/certificates">
                       <Button size="sm" variant="outline" className="rounded-xl">

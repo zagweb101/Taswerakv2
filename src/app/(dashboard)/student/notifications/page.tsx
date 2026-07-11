@@ -4,6 +4,7 @@ import { Bell, CheckCircle2, Clock, Award, Wallet, BookOpen } from "lucide-react
 import { Card, CardContent } from "@/components/ui/card";
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
+import { MarkReadButton } from "@/components/student/mark-read-button";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -113,12 +114,7 @@ export default async function StudentNotificationsPage() {
                       </div>
                     </div>
                     {isUnread && (
-                      <button
-                        className="text-xs text-muted-foreground hover:text-foreground shrink-0"
-                        aria-label="تعليم كمقروء"
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                      </button>
+                      <MarkReadButton notificationId={n.id} />
                     )}
                   </div>
                 </CardContent>

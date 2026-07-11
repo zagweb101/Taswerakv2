@@ -49,10 +49,21 @@ export function ContactForm() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
-      // Simulated submit (real implementation in later phase)
-      await new Promise((r) => setTimeout(r, 800));
-      toast.success("تم استلام رسالتك! سنردّ خلال 24 ساعة.");
-      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+      try {
+        const res = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "فشل الإرسال");
+        }
+        toast.success(data.message || "تم استلام رسالتك!");
+        setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+      } catch (err: any) {
+        toast.error(err.message || "فشل الإرسال");
+      }
     });
   };
 

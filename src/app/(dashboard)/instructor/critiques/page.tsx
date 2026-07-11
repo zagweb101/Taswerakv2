@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import Link from "next/link";
 import { Image, MessageSquare, Clock, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -172,13 +173,15 @@ export default async function InstructorCritiquesPage() {
                 )}
 
                 {/* Action */}
-                <Button
-                  className="w-full mt-3 rounded-xl brand-gradient text-white hover:opacity-90"
-                  size="sm"
-                >
-                  <MessageSquare className="h-3.5 w-3.5 ml-1" />
-                  {s.status === "CRITIQUED" || s.status === "APPROVED" ? "تعديل النقد" : "ابدأ النقد"}
-                </Button>
+                <Link href={`/instructor/critiques/${s.id}`} className="block w-full mt-3">
+                  <Button
+                    className="w-full rounded-xl brand-gradient text-white hover:opacity-90"
+                    size="sm"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5 ml-1" />
+                    {s.status === "CRITIQUED" || s.status === "APPROVED" ? "تعديل النقد" : "ابدأ النقد"}
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ))}

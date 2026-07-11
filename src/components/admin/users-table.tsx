@@ -95,22 +95,29 @@ export function UsersTable({
   };
 
   const toggleBan = (u: User) => {
+    if (u.role === "ADMIN") {
+      toast.error("لا يمكن حظر مدير");
+      return;
+    }
+    const willBan = !bannedIds.has(u.id);
     startTransition(async () => {
       try {
-        // In a full implementation this would call /api/admin/users/:id/ban
-        // For now we keep the optimistic UI update + audit on backend
-        await new Promise((r) => setTimeout(r, 400));
+        const res = await fetch(`/api/admin/users/${u.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isBanned: willBan }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "فشل الإجراء");
+        }
         setBannedIds((prev) => {
           const next = new Set(prev);
-          if (next.has(u.id)) next.delete(u.id);
-          else next.add(u.id);
+          if (willBan) next.add(u.id);
+          else next.delete(u.id);
           return next;
         });
-        toast.success(
-          bannedIds.has(u.id)
-            ? `تم رفع الإيقاف عن ${u.name || "المستخدم"}`
-            : `تم إيقاف ${u.name || "المستخدم"}`
-        );
+        toast.success(data.message);
       } catch (err: any) {
         toast.error(err.message || "فشل الإجراء");
       }

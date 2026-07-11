@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { auth } from "@/auth";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { Button } from "@/components/ui/button";
@@ -158,6 +159,10 @@ export default async function CourseDetailPage({
 }) {
   const { slug } = await params;
 
+  // Check auth state for enrollment CTA
+  const session = await auth();
+  let existingEnrollment: any = null;
+
   // Try DB first
   let dbCourse: any = null;
   try {
@@ -182,6 +187,73 @@ export default async function CourseDetailPage({
   if (!dbCourse && !fallback) {
     notFound();
   }
+
+  // Check existing enrollment if student is logged in
+  if (session?.user?.id && session.user.role === "STUDENT" && dbCourse) {
+    try {
+      existingEnrollment = await db.enrollment.findUnique({
+        where: {
+          studentId_courseId: {
+            studentId: session.user.id,
+            courseId: dbCourse.id,
+          },
+        },
+        select: { id: true, status: true, progress: true },
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  // Determine CTA based on auth + enrollment state
+  const enrollmentCta = (() => {
+    if (!session?.user) {
+      return {
+        href: "/signup",
+        label: "سجّل في الدورة",
+        variant: "default" as const,
+      };
+    }
+    if (session.user.role !== "STUDENT") {
+      return {
+        href: `/${session.user.role.toLowerCase()}`,
+        label: "العودة للوحة التحكم",
+        variant: "outline" as const,
+      };
+    }
+    if (existingEnrollment?.status === "ACTIVE") {
+      // Find first lesson
+      const firstSection = dbCourse?.sections?.[0];
+      const firstLesson = firstSection?.lessons?.[0];
+      return {
+        href: firstLesson
+          ? `/student/learn/${dbCourse.id}/${firstLesson.id}`
+          : "/student/courses",
+        label: "متابعة الدورة",
+        variant: "default" as const,
+      };
+    }
+    if (existingEnrollment?.status === "PENDING_APPROVAL") {
+      return {
+        href: "/student/payments",
+        label: "بانتظار اعتماد الدفعة",
+        variant: "outline" as const,
+      };
+    }
+    if (existingEnrollment?.status === "PENDING_PAYMENT") {
+      return {
+        href: "/student/payments",
+        label: "ارفع إيصال الدفع",
+        variant: "default" as const,
+      };
+    }
+    // Logged-in student, not enrolled — go to payments to upload receipt
+    return {
+      href: `/student/payments?course=${dbCourse?.id || ""}`,
+      label: "ارفع إيصال الدفع",
+      variant: "default" as const,
+    };
+  })();
 
   const level = dbCourse?.level || fallback?.level || "BEGINNER";
   const levelInfo = levelLabels[level] || { label: level, cls: "bg-muted" };
@@ -270,9 +342,16 @@ export default async function CourseDetailPage({
                       <span className="text-base text-muted-foreground mr-1.5">ر.س</span>
                     </div>
 
-                    <Link href="/signup">
-                      <Button className="w-full rounded-xl brand-gradient text-white hover:opacity-90 h-12 text-base">
-                        سجّل في الدورة
+                    <Link href={enrollmentCta.href}>
+                      <Button
+                        className={`w-full rounded-xl h-12 text-base ${
+                          enrollmentCta.variant === "default"
+                            ? "brand-gradient text-white hover:opacity-90"
+                            : ""
+                        }`}
+                        variant={enrollmentCta.variant}
+                      >
+                        {enrollmentCta.label}
                         <ArrowLeft className="h-4 w-4 mr-1" />
                       </Button>
                     </Link>
@@ -341,9 +420,16 @@ export default async function CourseDetailPage({
             <p className="text-muted-foreground mb-5">
               انضم اليوم وابدأ رحلتك في تصوير البيوتي والبورتريه مع نقد تفصيلي على أعمالك.
             </p>
-            <Link href="/signup">
-              <Button className="rounded-xl brand-gradient text-white hover:opacity-90 h-12 px-8">
-                سجّل الآن
+            <Link href={enrollmentCta.href}>
+              <Button
+                className={`rounded-xl h-12 px-8 ${
+                  enrollmentCta.variant === "default"
+                    ? "brand-gradient text-white hover:opacity-90"
+                    : ""
+                }`}
+                variant={enrollmentCta.variant}
+              >
+                {enrollmentCta.label}
                 <ArrowLeft className="h-4 w-4 mr-1" />
               </Button>
             </Link>
