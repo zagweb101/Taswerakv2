@@ -106,7 +106,7 @@ async function main() {
     const existing = await prisma.course.findUnique({ where: { slug: c.slug } });
     if (existing) continue;
 
-    await prisma.course.create({
+    const course = await prisma.course.create({
       data: {
         ...c,
         currency: "SAR",
@@ -116,56 +116,63 @@ async function main() {
         instructorId: instructor.id,
         sections: {
           create: [
-            {
-              title: "المقدمة",
-              titleAr: "المقدمة",
-              order: 0,
-              lessons: {
-                create: [
-                  {
-                    title: "الترحيب والتعريف بالدورة",
-                    slug: "welcome",
-                    description: "تعريف عام بمحتويات الدورة وأهدافها",
-                    type: "VIDEO",
-                    order: 0,
-                    isPreview: true,
-                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                    duration: 180,
-                  },
-                ],
-              },
-            },
-            {
-              title: "الأساسيات",
-              titleAr: "الأساسيات",
-              order: 1,
-              lessons: {
-                create: [
-                  {
-                    title: "تشريح الكاميرا",
-                    slug: "camera-anatomy",
-                    description: "تعرّف على أجزاء الكاميرا الرئيسية وكيفية ضبطها",
-                    type: "VIDEO",
-                    order: 0,
-                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                    duration: 600,
-                  },
-                  {
-                    title: "مثلث التعريض",
-                    slug: "exposure-triangle",
-                    description: "ISO، سرعة الغالق، فتحة العدسة — كيف تتفاعل معاً",
-                    type: "VIDEO",
-                    order: 1,
-                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                    duration: 720,
-                  },
-                ],
-              },
-            },
+            { title: "المقدمة", titleAr: "المقدمة", order: 0 },
+            { title: "الأساسيات", titleAr: "الأساسيات", order: 1 },
           ],
         },
       },
+      include: { sections: true },
     });
+
+    const introSection = course.sections.find((s) => s.order === 0);
+    const basicsSection = course.sections.find((s) => s.order === 1);
+
+    if (introSection) {
+      await prisma.lesson.create({
+        data: {
+          courseId: course.id,
+          sectionId: introSection.id,
+          title: "الترحيب والتعريف بالدورة",
+          slug: "welcome",
+          description: "تعريف عام بمحتويات الدورة وأهدافها",
+          type: "VIDEO",
+          order: 0,
+          isPreview: true,
+          videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+          duration: 180,
+        },
+      });
+    }
+
+    if (basicsSection) {
+      await prisma.lesson.createMany({
+        data: [
+          {
+            courseId: course.id,
+            sectionId: basicsSection.id,
+            title: "تشريح الكاميرا",
+            slug: "camera-anatomy",
+            description: "تعرّف على أجزاء الكاميرا الرئيسية وكيفية ضبطها",
+            type: "VIDEO",
+            order: 0,
+            videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            duration: 600,
+          },
+          {
+            courseId: course.id,
+            sectionId: basicsSection.id,
+            title: "مثلث التعريض",
+            slug: "exposure-triangle",
+            description: "ISO، سرعة الغالق، فتحة العدسة — كيف تتفاعل معاً",
+            type: "VIDEO",
+            order: 1,
+            videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+            duration: 720,
+          },
+        ],
+      });
+    }
+
     console.log(`✅ Course: ${c.titleAr}`);
   }
 
