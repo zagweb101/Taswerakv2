@@ -6,21 +6,15 @@ import {
   CheckCircle2,
   Clock,
   Download,
-  Filter,
   Banknote,
 } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
-import { PaymentStatusBadge } from "@/components/dashboard/status-badges";
 import { ExportExcelButton } from "@/components/admin/export-excel-button";
+import { FinanceTransactionsTable } from "@/components/admin/finance-transactions-table";
 
 export const dynamic = "force-dynamic";
 
@@ -104,68 +98,8 @@ export default async function AdminFinancePage() {
         </Card>
       </div>
 
-      {/* Recent transactions */}
-      <Card className="rounded-2xl border-border/60">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">آخر المعاملات</CardTitle>
-              <CardDescription>أحدث {payments.length} معاملة</CardDescription>
-            </div>
-            <Button variant="outline" size="sm" className="rounded-xl">
-              <Filter className="h-3.5 w-3.5 ml-1" />
-              تصفية
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {payments.length === 0 ? (
-            <div className="text-center py-10 text-sm text-muted-foreground">
-              لا توجد معاملات بعد
-            </div>
-          ) : (
-            <div className="overflow-x-auto nice-scroll">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-right text-xs text-muted-foreground border-b border-border/60">
-                    <th className="font-medium py-2 px-2">الطالب</th>
-                    <th className="font-medium py-2 px-2 hidden sm:table-cell">الدورة</th>
-                    <th className="font-medium py-2 px-2 hidden md:table-cell">البنك</th>
-                    <th className="font-medium py-2 px-2">المبلغ</th>
-                    <th className="font-medium py-2 px-2">الحالة</th>
-                    <th className="font-medium py-2 px-2 hidden lg:table-cell">التاريخ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payments.map((p) => (
-                    <tr key={p.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                      <td className="py-3 px-2">
-                        <div className="font-medium">{p.student?.name || "—"}</div>
-                        <div className="text-xs text-muted-foreground" dir="ltr">{p.referenceNumber || "—"}</div>
-                      </td>
-                      <td className="py-3 px-2 hidden sm:table-cell text-xs">
-                        {p.enrollment?.course?.titleAr || "—"}
-                      </td>
-                      <td className="py-3 px-2 hidden md:table-cell text-xs text-muted-foreground">
-                        {p.bankName}
-                      </td>
-                      <td className="py-3 px-2 font-semibold">
-                        {Number(p.amount).toLocaleString("ar-SA")} <span className="text-xs text-muted-foreground">{p.currency}</span>
-                      </td>
-                      <td className="py-3 px-2">
-                        <PaymentStatusBadge status={p.status} />
-                      </td>
-                      <td className="py-3 px-2 hidden lg:table-cell text-xs text-muted-foreground">
-                        {new Date(p.createdAt).toLocaleDateString("ar-SA")}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Recent transactions (with search) */}
+      <FinanceTransactionsTable payments={payments as any} />
 
       {/* Summary */}
       <Card className="rounded-2xl border-border/60">

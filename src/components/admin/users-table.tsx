@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Loader2,
   Filter,
+  Info,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -25,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UserDetailDialog } from "@/components/admin/user-detail-dialog";
 
 const roleMap: Record<string, { label: string; cls: string }> = {
   STUDENT: { label: "طالب", cls: "bg-blue-100 text-blue-700" },
@@ -55,6 +57,8 @@ export function UsersTable({
   const [bannedIds, setBannedIds] = useState<Set<string>>(
     new Set(users.filter((u) => u.isBanned).map((u) => u.id))
   );
+  const [detailUser, setDetailUser] = useState<User | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const filtered = users.filter((u) => {
     const matchQ =
@@ -125,6 +129,7 @@ export function UsersTable({
   };
 
   return (
+    <>
     <Card className="rounded-2xl border-border/60">
       <CardContent className="p-4 sm:p-6">
         {/* Filters */}
@@ -211,6 +216,16 @@ export function UsersTable({
                       <td className="py-3 px-2">
                         <div className="flex items-center justify-end gap-1">
                           <button
+                            onClick={() => {
+                              setDetailUser(u);
+                              setDetailOpen(true);
+                            }}
+                            title="عرض التفاصيل"
+                            className="h-8 w-8 rounded-lg hover:bg-muted hover:text-foreground flex items-center justify-center text-muted-foreground transition-colors"
+                          >
+                            <Info className="h-3.5 w-3.5" />
+                          </button>
+                          <button
                             onClick={() => impersonate(u)}
                             disabled={isSelf || pending || u.role === "ADMIN"}
                             title="دخول نيابةً"
@@ -251,5 +266,13 @@ export function UsersTable({
         </div>
       </CardContent>
     </Card>
+
+    {/* User detail dialog */}
+    <UserDetailDialog
+      user={detailUser}
+      open={detailOpen}
+      onOpenChange={setDetailOpen}
+    />
+    </>
   );
 }

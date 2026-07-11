@@ -22,7 +22,7 @@ const mockSubmissions = [
       title: "تمرين الإضاءة الجانبية",
       course: { titleAr: "تصوير البيوتي Beauty", title: "Beauty" },
     },
-    student: { name: "صفاء العتيبي" },
+    student: { id: "s1", name: "صفاء العتيبي" },
   },
   {
     id: "sub2",
@@ -35,7 +35,7 @@ const mockSubmissions = [
       title: "تصوير المكياج بالماكرو",
       course: { titleAr: "ميكب توتوريال", title: "Makeup" },
     },
-    student: { name: "أماني بخش" },
+    student: { id: "s2", name: "أماني بخش" },
   },
   {
     id: "sub3",
@@ -49,7 +49,7 @@ const mockSubmissions = [
       title: "بورتريه بإضاءة ناعمة",
       course: { titleAr: "أساسيات التصوير", title: "Fundamentals" },
     },
-    student: { name: "المها اليازيدي" },
+    student: { id: "s3", name: "المها اليازيدي" },
   },
 ];
 
@@ -143,7 +143,13 @@ export default async function InstructorCritiquesPage() {
                 </div>
 
                 <div className="text-xs text-muted-foreground mt-2">
-                  بواسطة <span className="font-medium text-foreground">{s.student.name}</span>
+                  بواسطة{" "}
+                  <Link
+                    href={`/instructor/students/${s.student.id}`}
+                    className="font-medium text-foreground hover:text-[#0A9ED9] hover:underline"
+                  >
+                    {s.student.name}
+                  </Link>
                 </div>
 
                 {s.caption && (
