@@ -3,6 +3,7 @@ import { MapPin, Mail, Phone, Instagram, Youtube, Twitter, MessageCircle } from 
 import { brandGradientText, brand } from "@/lib/brand";
 import { getCmsValues } from "@/lib/services/cms";
 import { getSupportWhatsAppLink } from "@/lib/services/whatsapp";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 export async function LandingFooter() {
   const cms = await getCmsValues(["footer_note", "contact_email", "contact_phone", "city"]);
@@ -16,13 +17,8 @@ export async function LandingFooter() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-3">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-9 w-9 rounded-lg brand-gradient flex items-center justify-center text-white font-bold text-base">
-                ت
-              </div>
-              <span className={`text-xl font-extrabold ${brandGradientText}`}>
-                {brand.name}
-              </span>
+            <Link href="/">
+              <BrandLogo variant="compact" />
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               منصة تعليمية متخصصة في تعليم التصوير الفوتوغرافي من الصفر للاحتراف.

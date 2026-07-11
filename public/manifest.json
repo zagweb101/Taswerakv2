@@ -14,7 +14,7 @@
     {
       "src": "/logo.webp",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/webp",
       "purpose": "any maskable"
     }
   ],

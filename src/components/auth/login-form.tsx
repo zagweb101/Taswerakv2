@@ -44,9 +44,6 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md glass border-white/40 shadow-xl rounded-2xl">
       <CardHeader className="space-y-3 text-center">
-        <div className="mx-auto h-14 w-14 rounded-2xl brand-gradient flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-          ت
-        </div>
         <CardTitle className="text-3xl font-bold">أهلاً بعودتك</CardTitle>
         <CardDescription className="text-muted-foreground">
           سجّل دخولك للمتابعة في رحلة التعلّم

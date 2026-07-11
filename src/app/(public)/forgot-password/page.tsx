@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { brandGradientText } from "@/lib/brand";
 
 export default function ForgotPasswordPage() {
@@ -44,10 +45,8 @@ export default function ForgotPasswordPage() {
 
       <Card className="w-full max-w-md glass border-white/40 shadow-xl rounded-2xl">
         <CardHeader className="space-y-3 text-center">
-          <Link href="/" className="mx-auto">
-            <div className="h-11 w-11 rounded-xl brand-gradient flex items-center justify-center text-white font-bold text-xl shadow-md">
-              ت
-            </div>
+          <Link href="/" className="mx-auto inline-block">
+            <BrandLogo variant="large" />
           </Link>
           <CardTitle className="text-2xl font-bold">
             <span className={brandGradientText}>نسيت كلمة المرور</span>

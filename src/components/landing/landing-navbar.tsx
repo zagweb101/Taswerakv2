@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { ArrowLeft, LayoutDashboard } from "lucide-react";
 import { brandGradientText, brand } from "@/lib/brand";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { LandingMobileNav } from "./landing-mobile-nav";
 
 const navItems = [
@@ -20,13 +21,8 @@ export async function LandingNavbar() {
     <header className="sticky top-0 z-50 w-full">
       <div className="absolute inset-0 -z-10 glass border-b border-white/40" />
       <div className="container mx-auto px-4 lg:px-8 h-16 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2 shrink-0 group">
-          <div className="h-9 w-9 rounded-lg brand-gradient flex items-center justify-center text-white font-bold text-base shadow-md group-hover:scale-105 transition-transform">
-            ت
-          </div>
-          <span className={`text-xl font-extrabold ${brandGradientText}`}>
-            {brand.name}
-          </span>
+        <Link href="/" className="shrink-0 group">
+          <BrandLogo variant="compact" className="group-hover:opacity-90 transition-opacity" />
         </Link>
 
         {/* Desktop nav */}

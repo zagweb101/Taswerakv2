@@ -4,7 +4,7 @@
 // API or RSC requests.
 // ====================================================================
 
-const CACHE_NAME = "taswerak-v1";
+const CACHE_NAME = "taswerak-v2";
 const STATIC_ASSETS = [
   "/logo.webp",
   "/manifest.json",

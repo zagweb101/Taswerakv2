@@ -9,6 +9,7 @@ import { brandGradientText } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import { NotificationBell } from "@/components/realtime/notification-bell";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 export interface NavItem {
   href: string;
@@ -53,13 +54,8 @@ export function DashboardShell({
       )}
       {/* Top bar (mobile) */}
       <header className="lg:hidden sticky top-0 z-40 glass border-b border-border/40 px-4 h-14 flex items-center justify-between">
-        <Link href={`/${role}`} className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg brand-gradient flex items-center justify-center text-white font-bold">
-            ت
-          </div>
-          <span className={`text-lg font-bold ${brandGradientText}`}>
-            تصويرك
-          </span>
+        <Link href={`/${role}`} className="shrink-0">
+          <BrandLogo variant="sidebar" />
         </Link>
         <div className="flex items-center gap-2">
           <NotificationBell role={role} />
@@ -132,13 +128,8 @@ function SidebarContent({
   return (
     <>
       <div className="h-16 flex items-center justify-center border-b border-border/60 px-4">
-        <Link href={`/${role}`} className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-lg brand-gradient flex items-center justify-center text-white font-bold">
-            ت
-          </div>
-          <span className={`text-xl font-bold ${brandGradientText}`}>
-            تصويرك
-          </span>
+        <Link href={`/${role}`}>
+          <BrandLogo variant="sidebar" />
         </Link>
       </div>
 
