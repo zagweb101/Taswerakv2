@@ -30,33 +30,26 @@ export default async function AdminFinancePage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  let payments: any[] = [];
-  let stats = { total: 0, approved: 0, pending: 0, rejected: 0 };
-  try {
-    payments = await db.paymentReceipt.findMany({
-      include: {
-        student: { select: { name: true } },
-        enrollment: { select: { course: { select: { titleAr: true } } } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    });
-    const [total, approved, pending, rejected] = await Promise.all([
-      db.paymentReceipt.aggregate({ _sum: { amount: true } }),
-      db.paymentReceipt.aggregate({ where: { status: "APPROVED" }, _sum: { amount: true } }),
-      db.paymentReceipt.aggregate({ where: { status: "PENDING" }, _sum: { amount: true } }),
-      db.paymentReceipt.aggregate({ where: { status: "REJECTED" }, _sum: { amount: true } }),
-    ]);
-    stats = {
-      total: Number(total._sum.amount || 0),
-      approved: Number(approved._sum.amount || 0),
-      pending: Number(pending._sum.amount || 0),
-      rejected: Number(rejected._sum.amount || 0),
-    };
-  } catch {
-    payments = mockPayments;
-    stats = { total: 3395, approved: 2397, pending: 499, rejected: 499 };
-  }
+  const payments = await db.paymentReceipt.findMany({
+    include: {
+      student: { select: { name: true } },
+      enrollment: { select: { course: { select: { titleAr: true } } } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  });
+  const [total, approved, pending, rejected] = await Promise.all([
+    db.paymentReceipt.aggregate({ _sum: { amount: true } }),
+    db.paymentReceipt.aggregate({ where: { status: "APPROVED" }, _sum: { amount: true } }),
+    db.paymentReceipt.aggregate({ where: { status: "PENDING" }, _sum: { amount: true } }),
+    db.paymentReceipt.aggregate({ where: { status: "REJECTED" }, _sum: { amount: true } }),
+  ]);
+  const stats = {
+    total: Number(total._sum.amount || 0),
+    approved: Number(approved._sum.amount || 0),
+    pending: Number(pending._sum.amount || 0),
+    rejected: Number(rejected._sum.amount || 0),
+  };
 
   return (
     <div className="space-y-6">
