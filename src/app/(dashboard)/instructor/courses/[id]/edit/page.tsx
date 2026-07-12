@@ -41,13 +41,15 @@ export default async function EditCoursePage({ params }: PageProps) {
     notFound();
   }
 
+  const serializedCourse = JSON.parse(JSON.stringify(course));
+
   return (
     <div className="space-y-6">
       <DashboardPageHeader
         title={`تحرير: ${course.titleAr || course.title}`}
         description={`${course._count.enrollments} طالب مسجّل · ${course.sections.length} قسم`}
       />
-      <CourseEditor mode="edit" courseId={course.id} initialData={course} instructorId={session.user.id} />
+      <CourseEditor mode="edit" courseId={course.id} initialData={serializedCourse} instructorId={session.user.id} />
     </div>
   );
 }
