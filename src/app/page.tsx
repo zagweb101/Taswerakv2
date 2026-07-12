@@ -8,7 +8,7 @@ import { LandingTestimonials } from "@/components/landing/landing-testimonials";
 import { LandingCTA } from "@/components/landing/landing-cta";
 import { LandingFooter } from "@/components/landing/landing-footer";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function HomePage() {
   return (

@@ -4,7 +4,7 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { CourseList } from "@/components/landing/course-list";
 import { brandGradientText } from "@/lib/brand";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata = {
   title: "الدورات | تصويرك",
