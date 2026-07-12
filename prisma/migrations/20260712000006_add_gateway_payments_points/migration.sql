@@ -1,8 +1,15 @@
 -- Add Gateway Payments + Points System (incremental)
 
--- CreateEnum
-CREATE TYPE "GatewayPaymentStatus" AS ENUM ('PENDING', 'PAID', 'FAILED', 'EXPIRED', 'REFUNDED');
-CREATE TYPE "PaymentProvider" AS ENUM ('MANUAL', 'MOYASAR', 'PAYTABS', 'TAP');
+-- CreateEnum (idempotent — safe to re-run after partial failure)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'GatewayPaymentStatus') THEN
+        CREATE TYPE "GatewayPaymentStatus" AS ENUM ('PENDING', 'PAID', 'FAILED', 'EXPIRED', 'REFUNDED');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'PaymentProvider') THEN
+        CREATE TYPE "PaymentProvider" AS ENUM ('MANUAL', 'MOYASAR', 'PAYTABS', 'TAP');
+    END IF;
+END$$;
 
 -- AlterTable User: add points
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "points" INTEGER NOT NULL DEFAULT 0;
