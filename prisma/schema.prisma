@@ -9,9 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 // ====================================================================
@@ -125,6 +123,11 @@ model User {
   notifications   Notification[]
   supportTickets  SupportTicket[]
 
+  // === NEW: Points & Gateway Payments ===
+  points            Int                @default(0)
+  pointTransactions PointTransaction[]
+  gatewayPayments   Payment[]          @relation("GatewayPayments")
+
   // Per-user settings (one-to-one)
   settings UserSettings?
 
@@ -203,14 +206,15 @@ model Course {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  instructor   User            @relation("InstructorCourses", fields: [instructorId], references: [id])
-  sections     Section[]
-  lessons      Lesson[]
-  enrollments  Enrollment[]
-  assignments  Assignment[]
-  reviews      Review[]
-  certificates Certificate[]
-  tickets      SupportTicket[] @relation("TicketCourse")
+  instructor      User            @relation("InstructorCourses", fields: [instructorId], references: [id])
+  sections        Section[]
+  lessons         Lesson[]
+  enrollments     Enrollment[]
+  assignments     Assignment[]
+  reviews         Review[]
+  certificates    Certificate[]
+  gatewayPayments Payment[]
+  tickets         SupportTicket[] @relation("TicketCourse")
 
   @@index([instructorId])
   @@index([status])
@@ -647,4 +651,59 @@ model GuardianLink {
   @@unique([guardianId, studentId])
   @@index([guardianId])
   @@index([studentId])
+}
+
+// ====================================================================
+// NEW — Gateway Payments (Moyasar / PayTabs ready) + Points
+// ====================================================================
+
+enum GatewayPaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  MANUAL
+  MOYASAR
+  PAYTABS
+  TAP
+}
+
+model Payment {
+  id         String               @id @default(cuid())
+  userId     String
+  courseId   String
+  amount     Int // بالهللة: 9900 = 99 ريال
+  currency   String               @default("SAR")
+  status     GatewayPaymentStatus @default(PENDING)
+  provider   PaymentProvider      @default(MANUAL)
+  providerId String?              @unique
+  receiptUrl String?
+  invoiceId  String?              @unique
+  createdAt  DateTime             @default(now())
+  paidAt     DateTime?
+
+  user   User   @relation("GatewayPayments", fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([status])
+}
+
+model PointTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String
+  courseId  String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
 }
