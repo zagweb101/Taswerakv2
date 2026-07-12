@@ -76,21 +76,28 @@ async function simulateEmail(payload: EmailPayload): Promise<{ ok: boolean; mode
   return { ok: true, mode: "simulation" };
 }
 
+// Singleton SMTP transporter — reused across all email sends
+let globalTransporter: any = null;
+
 async function smtpEmail(payload: EmailPayload): Promise<{ ok: boolean; mode: Transport }> {
   try {
     // Lazy import so the dependency only loads when needed
     const nodemailer = await import("nodemailer");
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || "587", 10),
-      secure: parseInt(process.env.SMTP_PORT || "587", 10) === 465,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
 
-    await transporter.sendMail({
+    // Reuse transporter (singleton) instead of creating per-send
+    if (!globalTransporter) {
+      globalTransporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || "587", 10),
+        secure: parseInt(process.env.SMTP_PORT || "587", 10) === 465,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD,
+        },
+      });
+    }
+
+    await globalTransporter.sendMail({
       from: fromAddress,
       to: payload.to,
       subject: payload.subject,
@@ -101,6 +108,8 @@ async function smtpEmail(payload: EmailPayload): Promise<{ ok: boolean; mode: Tr
     return { ok: true, mode: "smtp" };
   } catch (err) {
     console.error("[email] SMTP failed:", err);
+    // Reset transporter on failure so it's re-created next time
+    globalTransporter = null;
     // Fall back to simulation so we don't lose the email
     return simulateEmail(payload);
   }

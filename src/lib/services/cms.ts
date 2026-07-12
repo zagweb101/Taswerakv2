@@ -50,14 +50,50 @@ export async function getCmsValue(key: string): Promise<string> {
 }
 
 /**
- * Get multiple CMS values at once (more efficient than multiple calls).
+ * Get multiple CMS values at once (single query instead of N queries).
  */
 export async function getCmsValues(keys: string[]): Promise<Record<string, string>> {
-  const result: Record<string, string> = {};
-  await Promise.all(
-    keys.map(async (key) => {
-      result[key] = await getCmsValue(key);
-    })
-  );
-  return result;
+  try {
+    // Fetch all possible keys (with and without admin prefix) in one query
+    const adminKeys = keys.map((key) => `admin_settings_${key}`);
+    const allKeys = [...keys, ...adminKeys];
+
+    const rows = await db.cmsContent.findMany({
+      where: { key: { in: allKeys } },
+    });
+    const rowMap = new Map(rows.map((r) => [r.key, r.value]));
+
+    const result: Record<string, string> = {};
+    for (const key of keys) {
+      // Try exact key first, then admin-prefixed key
+      const directValue = rowMap.get(key);
+      if (directValue) {
+        result[key] = directValue;
+        continue;
+      }
+
+      const adminValue = rowMap.get(`admin_settings_${key}`);
+      if (adminValue) {
+        try {
+          const parsed = JSON.parse(adminValue);
+          if (typeof parsed === "string") {
+            result[key] = parsed;
+          } else if (parsed[key]) {
+            result[key] = String(parsed[key]);
+          } else {
+            result[key] = adminValue;
+          }
+        } catch {
+          result[key] = adminValue;
+        }
+        continue;
+      }
+
+      result[key] = DEFAULTS[key] || "";
+    }
+    return result;
+  } catch {
+    // DB unavailable — return defaults
+    return keys.reduce((acc, key) => ({ ...acc, [key]: DEFAULTS[key] || "" }), {} as Record<string, string>);
+  }
 }

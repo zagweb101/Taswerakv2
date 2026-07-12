@@ -131,9 +131,10 @@ export async function POST(req: Request) {
       // settings creation optional
     }
 
-    return NextResponse.json({ ok: true, user });
     // Send welcome email (async, non-blocking)
     sendWelcomeEmail(user.id).catch(() => {});
+
+    return NextResponse.json({ ok: true, user });
   } catch (err) {
     console.error("[signup] error:", err);
     return NextResponse.json(

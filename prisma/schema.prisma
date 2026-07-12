@@ -317,7 +317,7 @@ model PaymentReceipt {
   updatedAt       DateTime      @updatedAt
 
   enrollment Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
-  student    User        @relation("StudentPayments", fields: [studentId], references: [id], onDelete: Cascade)
+  student    User        @relation("StudentPayments", fields: [studentId], references: [id], onDelete: Restrict)
   reviewer   User?       @relation("PaymentReviewer", fields: [reviewerId], references: [id])
 
   @@index([studentId])
@@ -465,7 +465,7 @@ model Certificate {
   signatureUrl      String?
 
   enrollment Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
-  student    User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student    User        @relation(fields: [studentId], references: [id], onDelete: Restrict)
   course     Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
@@ -692,7 +692,7 @@ model Payment {
   createdAt  DateTime             @default(now())
   paidAt     DateTime?
 
-  user   User   @relation("GatewayPayments", fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation("GatewayPayments", fields: [userId], references: [id], onDelete: Restrict)
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@index([userId])
