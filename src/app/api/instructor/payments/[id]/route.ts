@@ -84,7 +84,7 @@ export async function PATCH(
     // Authorization: instructor must own the course (admin can override)
     if (
       session.user.role === "INSTRUCTOR" &&
-      receipt.enrollment.course.instructorId !== session.user.id
+      (!receipt.enrollment || receipt.enrollment.course.instructorId !== session.user.id)
     ) {
       return NextResponse.json(
         { ok: false, error: "لا تملك صلاحية مراجعة هذا الإيصال" },
@@ -93,7 +93,7 @@ export async function PATCH(
     }
 
     const now = new Date();
-    const courseName = receipt.enrollment.course.titleAr || receipt.enrollment.course.title;
+    const courseName = receipt.enrollment?.course.titleAr || receipt.enrollment?.course.title || "دورة";
 
     if (action === "APPROVE") {
       // Update receipt
@@ -105,11 +105,13 @@ export async function PATCH(
           reviewedAt: now,
         },
       });
-      // Activate enrollment
-      await db.enrollment.update({
-        where: { id: receipt.enrollmentId },
-        data: { status: "ACTIVE" },
-      });
+      // Activate enrollment (if still linked)
+      if (receipt.enrollmentId) {
+        await db.enrollment.update({
+          where: { id: receipt.enrollmentId },
+          data: { status: "ACTIVE" },
+        });
+      }
 
       await writeAudit({
         userId: session.user.id,
@@ -161,10 +163,12 @@ export async function PATCH(
         },
       });
       // Reset enrollment to PENDING_PAYMENT so student can re-upload
-      await db.enrollment.update({
-        where: { id: receipt.enrollmentId },
-        data: { status: "PENDING_PAYMENT" },
-      });
+      if (receipt.enrollmentId) {
+        await db.enrollment.update({
+          where: { id: receipt.enrollmentId },
+          data: { status: "PENDING_PAYMENT" },
+        });
+      }
 
       await writeAudit({
         userId: session.user.id,

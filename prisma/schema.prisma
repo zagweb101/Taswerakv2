@@ -298,7 +298,7 @@ model Enrollment {
 
 model PaymentReceipt {
   id              String        @id @default(cuid())
-  enrollmentId    String
+  enrollmentId    String?
   studentId       String
   imageUrl        String
   thumbnailUrl    String?
@@ -314,14 +314,15 @@ model PaymentReceipt {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  student    User       @relation("StudentPayments", fields: [studentId], references: [id], onDelete: Cascade)
-  reviewer   User?      @relation("PaymentReviewer", fields: [reviewerId], references: [id])
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  student    User        @relation("StudentPayments", fields: [studentId], references: [id], onDelete: Cascade)
+  reviewer   User?       @relation("PaymentReviewer", fields: [reviewerId], references: [id])
 
   @@index([studentId])
   @@index([status])
   @@index([reviewerId])
   @@index([createdAt])
+  @@index([enrollmentId])
 }
 
 // ====================================================================
@@ -356,7 +357,7 @@ model Submission {
   id               String           @id @default(cuid())
   assignmentId     String
   studentId        String
-  enrollmentId     String
+  enrollmentId     String?
   lessonId         String?
   imageUrl         String
   thumbnailUrl     String?
@@ -375,15 +376,17 @@ model Submission {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  student    User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  lesson     Lesson?    @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  critiqueBy User?      @relation("CritiqueBy", fields: [critiqueById], references: [id])
+  assignment Assignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student    User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  lesson     Lesson?     @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  critiqueBy User?       @relation("CritiqueBy", fields: [critiqueById], references: [id])
 
   @@index([assignmentId])
   @@index([studentId])
   @@index([status])
+  @@index([critiqueById])
+  @@index([enrollmentId])
 }
 
 // ====================================================================
@@ -447,7 +450,7 @@ model QuizAttempt {
 
 model Certificate {
   id                String            @id @default(cuid())
-  enrollmentId      String            @unique
+  enrollmentId      String?           @unique
   studentId         String
   courseId          String
   certificateNumber String            @unique
@@ -459,12 +462,13 @@ model Certificate {
   grade             String?
   signatureUrl      String?
 
-  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  student    User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  course     Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  student    User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course     Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([courseId])
+  @@index([enrollmentId])
 }
 
 // ====================================================================
