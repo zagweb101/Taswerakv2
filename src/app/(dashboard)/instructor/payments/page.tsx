@@ -81,23 +81,18 @@ export default async function InstructorPaymentsPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  let receipts: any[] = [];
-  try {
-    receipts = await db.paymentReceipt.findMany({
-      where: {
-        enrollment: { course: { instructorId: session.user.id } },
+  const receipts = await db.paymentReceipt.findMany({
+    where: {
+      enrollment: { course: { instructorId: session.user.id } },
+    },
+    include: {
+      student: { select: { id: true, name: true, email: true, image: true } },
+      enrollment: {
+        select: { course: { select: { titleAr: true, title: true } } },
       },
-      include: {
-        student: { select: { id: true, name: true, email: true, image: true } },
-        enrollment: {
-          select: { course: { select: { titleAr: true, title: true } } },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-  } catch {
-    receipts = mockReceipts;
-  }
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   const pending = receipts.filter((r) => r.status === "PENDING");
   const approved = receipts.filter((r) => r.status === "APPROVED");
