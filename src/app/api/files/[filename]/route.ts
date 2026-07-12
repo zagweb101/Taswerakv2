@@ -17,6 +17,10 @@ const MIME_TYPES: Record<string, string> = {
   ".gif": "image/gif",
   ".pdf": "application/pdf",
   ".svg": "image/svg+xml",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".ogg": "video/ogg",
+  ".mov": "video/quicktime",
 };
 
 export async function GET(
@@ -36,22 +40,58 @@ export async function GET(
 
     const filePath = path.join(process.cwd(), ".upload", safeFilename);
 
-    // Check file exists
+    // Check file exists and get stats
+    let fileSize = 0;
     try {
-      await fs.access(filePath);
+      const stats = await fs.stat(filePath);
+      fileSize = stats.size;
     } catch {
       return new NextResponse("File not found", { status: 404 });
     }
-
-    const buffer = await fs.readFile(filePath);
 
     // Determine MIME type from extension
     const ext = path.extname(safeFilename).toLowerCase();
     const contentType = MIME_TYPES[ext] || "application/octet-stream";
 
+    const range = req.headers.get("range");
+
+    if (range) {
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+      if (start >= fileSize || end >= fileSize) {
+        return new NextResponse("Requested Range Not Satisfiable", {
+          status: 416,
+          headers: { "Content-Range": `bytes */${fileSize}` },
+        });
+      }
+
+      const chunksize = (end - start) + 1;
+      const fileHandle = await fs.open(filePath, "r");
+      const buffer = Buffer.alloc(chunksize);
+      await fileHandle.read(buffer, 0, chunksize, start);
+      await fileHandle.close();
+
+      return new NextResponse(buffer, {
+        status: 206,
+        headers: {
+          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": String(chunksize),
+          "Content-Type": contentType,
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+
+    const buffer = await fs.readFile(filePath);
+
     return new NextResponse(buffer, {
       status: 200,
       headers: {
+        "Content-Length": String(fileSize),
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=31536000, immutable",
         "X-Content-Type-Options": "nosniff",
