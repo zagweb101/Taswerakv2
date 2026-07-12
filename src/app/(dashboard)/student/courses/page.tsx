@@ -63,38 +63,33 @@ export default async function StudentCoursesPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  let enrollments: any[] = [];
-  try {
-    enrollments = await db.enrollment.findMany({
-      where: { studentId: session.user.id },
-      include: {
-        course: {
-          select: {
-            id: true,
-            slug: true,
-            titleAr: true,
-            title: true,
-            category: true,
-            durationHours: true,
-            thumbnailUrl: true,
-            sections: {
-              orderBy: { order: "asc" },
-              select: {
-                lessons: {
-                  orderBy: { order: "asc" },
-                  select: { id: true },
-                  take: 1,
-                },
+  const enrollments = await db.enrollment.findMany({
+    where: { studentId: session.user.id },
+    include: {
+      course: {
+        select: {
+          id: true,
+          slug: true,
+          titleAr: true,
+          title: true,
+          category: true,
+          durationHours: true,
+          thumbnailUrl: true,
+          sections: {
+            orderBy: { order: "asc" },
+            select: {
+              lessons: {
+                orderBy: { order: "asc" },
+                select: { id: true },
+                take: 1,
               },
             },
           },
         },
       },
-      orderBy: { enrolledAt: "desc" },
-    });
-  } catch {
-    enrollments = mockEnrollments;
-  }
+    },
+    orderBy: { enrolledAt: "desc" },
+  });
 
   // Helper: find first lesson id from enrollment
   const getFirstLessonId = (enr: any): string | null => {
