@@ -125,7 +125,7 @@ export function CritiqueInterface({
             onClick={onImageClick}
           >
             { }
-            <img
+            <img loading="lazy"
               ref={imgRef}
               src={imageUrl}
               alt="عمل الطالب"

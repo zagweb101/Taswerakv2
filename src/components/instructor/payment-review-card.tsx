@@ -145,7 +145,7 @@ export function PaymentReviewCard({ receipt }: { receipt: Receipt }) {
                 </DialogHeader>
                 <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
                   { }
-                  <img
+                  <img loading="lazy"
                     src={receipt.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 600'%3E%3Crect width='400' height='600' fill='%23f3f4f6'/%3E%3Ctext x='200' y='300' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23999'%3Eصورة الإيصال%3C/text%3E%3C/svg%3E"}
                     alt="إيصال"
                     className="w-full max-h-[70vh] object-contain"

@@ -33,40 +33,68 @@ interface WhatsAppNotification {
 
 /**
  * Send a WhatsApp notification.
- * Currently uses WhatsApp Cloud API (Meta) if configured.
- * Falls back to no-op if not configured.
+ * Supports 3 providers (checked in order):
+ *   1. Whapi.cloud (WHAPI_API_KEY) — easiest to set up
+ *   2. WhatsApp Cloud API / Meta (WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID)
+ *   3. No-op if neither configured
  *
- * To enable: set WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID env vars
+ * Whapi.cloud setup:
+ *   1. Create account at https://whapi.cloud
+ *   2. Get API key from dashboard
+ *   3. Set WHAPI_API_KEY in env vars
+ *   4. Set WHATSAPP_NUMBER (your WhatsApp Business number)
  */
 export async function sendWhatsAppNotification({ to, message }: WhatsAppNotification): Promise<boolean> {
-  const token = process.env.WHATSAPP_TOKEN;
+  // ── Try Whapi.cloud first (easier setup) ──
+  const whapiToken = process.env.WHAPI_API_KEY;
+  if (whapiToken) {
+    try {
+      const res = await fetch("https://api.whapi.cloud/messages/text", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${whapiToken}`,
+        },
+        body: JSON.stringify({
+          to: to,
+          body: message,
+        }),
+      });
+      return res.ok;
+    } catch (err) {
+      console.warn("[whatsapp] Whapi send failed:", err);
+      // Fall through to Meta Cloud API
+    }
+  }
+
+  // ── Try WhatsApp Cloud API (Meta) ──
+  const metaToken = process.env.WHATSAPP_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
-  if (!token || !phoneNumberId) {
-    // Not configured — skip silently
-    return false;
+  if (metaToken && phoneNumberId) {
+    try {
+      const res = await fetch(`https://graph.facebook.com/v18.0/${phoneNumberId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${metaToken}`,
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to,
+          type: "text",
+          text: { body: message },
+        }),
+      });
+      return res.ok;
+    } catch (err) {
+      console.warn("[whatsapp] Meta Cloud API send failed:", err);
+      return false;
+    }
   }
 
-  try {
-    const res = await fetch(`https://graph.facebook.com/v18.0/${phoneNumberId}/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to,
-        type: "text",
-        text: { body: message },
-      }),
-    });
-
-    return res.ok;
-  } catch (err) {
-    console.warn("[whatsapp] send failed:", err);
-    return false;
-  }
+  // Neither configured — skip silently
+  return false;
 }
 
 /**

@@ -1,23 +1,11 @@
-import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface BrandLogoProps {
-  /** Size variant: compact for headers, large for auth pages */
   variant?: "compact" | "large" | "sidebar";
-  /** Additional className for the container */
   className?: boolean | string;
-  /** Show subtitle text */
   showSubtitle?: boolean;
 }
 
-/**
- * Reusable brand logo component.
- * Renders the real Taswerak logo image + platform name text.
- *
- * Variants:
- * - compact: 40px logo + bold name (for navbar headers)
- * - sidebar: 36px logo + bold name (for dashboard sidebars)
- * - large: 56px logo + larger text (for auth pages: login, signup, forgot-password)
- */
 export function BrandLogo({ variant = "compact", className, showSubtitle = false }: BrandLogoProps) {
   const sizes = {
     compact: { img: 40, text: "text-xl", gap: "gap-2.5" },
@@ -29,14 +17,13 @@ export function BrandLogo({ variant = "compact", className, showSubtitle = false
 
   return (
     <div className={`flex items-center ${s.gap} ${typeof className === "string" ? className : ""}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src="/logo.webp"
         alt="منصة تصويرك"
         width={s.img}
         height={s.img}
         className="rounded-lg object-contain shrink-0"
-        style={{ width: s.img, height: s.img }}
+        priority
       />
       <div className="flex flex-col">
         <span className={`font-extrabold brand-gradient-text leading-tight ${s.text}`}>

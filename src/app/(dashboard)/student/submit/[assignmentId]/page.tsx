@@ -161,7 +161,7 @@ export default async function SubmitAssignmentPage({ params }: PageProps) {
             {existingSubmission.imageUrl && (
               <div className="rounded-xl overflow-hidden border border-border">
                 { }
-                <img
+                <img loading="lazy"
                   src={existingSubmission.imageUrl}
                   alt="عملك السابق"
                   className="w-full max-h-80 object-contain bg-muted/30"

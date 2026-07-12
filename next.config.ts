@@ -18,10 +18,14 @@ const nextConfig: NextConfig = {
 
   // Allow remote images from MinIO + production CDN
   images: {
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "http", hostname: "localhost", port: "9000" },
       { protocol: "https", hostname: "**.taswerak.com" },
       { protocol: "https", hostname: "taswerak.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "http", hostname: "**.sslip.io" },
+      { protocol: "https", hostname: "**.sslip.io" },
     ],
   },
 

@@ -114,7 +114,7 @@ export default async function StudentCertificatesPage() {
                 <div className="mt-5 p-4 rounded-xl bg-muted/30 flex items-center gap-3">
                   {qrDataUrl ? (
                      
-                    <img
+                    <img loading="lazy"
                       src={qrDataUrl}
                       alt="QR code للتحقق من الشهادة"
                       className="h-20 w-20 rounded-lg bg-white border border-border/60"
