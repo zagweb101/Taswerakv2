@@ -1,4 +1,4 @@
-﻿-- Add Gateway Payments + Points System (incremental)
+-- Add Gateway Payments + Points System (incremental)
 
 -- CreateEnum
 CREATE TYPE "GatewayPaymentStatus" AS ENUM ('PENDING', 'PAID', 'FAILED', 'EXPIRED', 'REFUNDED');
