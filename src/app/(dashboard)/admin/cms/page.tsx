@@ -36,33 +36,22 @@ export default async function AdminCmsPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  let testimonials = mockTestimonials;
-  let heroContent = {
-    heroTitle: "تعلّم التصوير من الصفر للاحتراف",
-    heroSubtitle: "دورات مباشرة مع أحمد زغلول في جدة",
-    footerNote: "© 2026 تصويرك — جميع الحقوق محفوظة",
+  const [tList, heroTitle, heroSub, footer] = await Promise.all([
+    db.review.findMany({
+      where: { isPublished: true },
+      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+    }),
+    db.cmsContent.findUnique({ where: { key: "hero_title" } }),
+    db.cmsContent.findUnique({ where: { key: "hero_subtitle" } }),
+    db.cmsContent.findUnique({ where: { key: "footer_note" } }),
+  ]);
+  
+  const testimonials = tList.length > 0 ? (tList as any) : mockTestimonials;
+  const heroContent = {
+    heroTitle: heroTitle?.value || "تعلّم التصوير من الصفر للاحتراف",
+    heroSubtitle: heroSub?.value || "دورات مباشرة مع أحمد زغلول في جدة",
+    footerNote: footer?.value || "© 2026 تصويرك — جميع الحقوق محفوظة",
   };
-  try {
-    const [tList, heroTitle, heroSub, footer] = await Promise.all([
-      db.review.findMany({
-        where: { isPublished: true },
-        orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
-      }),
-      db.cmsContent.findUnique({ where: { key: "hero_title" } }),
-      db.cmsContent.findUnique({ where: { key: "hero_subtitle" } }),
-      db.cmsContent.findUnique({ where: { key: "footer_note" } }),
-    ]);
-    if (tList.length > 0) testimonials = tList as any;
-    if (heroTitle || heroSub || footer) {
-      heroContent = {
-        heroTitle: heroTitle?.value || heroContent.heroTitle,
-        heroSubtitle: heroSub?.value || heroContent.heroSubtitle,
-        footerNote: footer?.value || heroContent.footerNote,
-      };
-    }
-  } catch {
-    // DB unavailable — use mocks
-  }
 
   return (
     <div className="space-y-6">
