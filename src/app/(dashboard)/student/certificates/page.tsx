@@ -28,18 +28,13 @@ export default async function StudentCertificatesPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  let certs: any[] = [];
-  try {
-    certs = await db.certificate.findMany({
-      where: { studentId: session.user.id },
-      include: {
-        course: { select: { titleAr: true, title: true } },
-      },
-      orderBy: { issuedAt: "desc" },
-    });
-  } catch {
-    certs = mockCertificates;
-  }
+  const certs = await db.certificate.findMany({
+    where: { studentId: session.user.id },
+    include: {
+      course: { select: { titleAr: true, title: true } },
+    },
+    orderBy: { issuedAt: "desc" },
+  });
 
   return (
     <div className="space-y-6">
