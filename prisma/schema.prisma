@@ -1,5 +1,5 @@
 // ====================================================================
-// Taswerak | تصويرك — Prisma Schema
+// Taswerak | ØªØµÙˆÙŠØ±Ùƒ â€” Prisma Schema
 // PostgreSQL only. Single-instructor today, multi-instructor ready.
 // ====================================================================
 
@@ -85,7 +85,7 @@ enum NotificationType {
 }
 
 // ====================================================================
-// AUTH — User / Account / Session / VerificationToken
+// AUTH â€” User / Account / Session / VerificationToken
 // ====================================================================
 
 model User {
@@ -178,7 +178,7 @@ model VerificationToken {
 }
 
 // ====================================================================
-// CATALOG — Course / Section / Lesson
+// CATALOG â€” Course / Section / Lesson
 // ====================================================================
 
 model Course {
@@ -268,7 +268,7 @@ model Lesson {
 
 // ====================================================================
 // ENROLLMENT + MANUAL PAYMENT FLOW (CORE)
-// Student uploads bank transfer receipt → PENDING → instructor approves
+// Student uploads bank transfer receipt â†’ PENDING â†’ instructor approves
 // ====================================================================
 
 model Enrollment {
@@ -469,7 +469,7 @@ model Certificate {
 
 // ====================================================================
 // REVIEWS / TESTIMONIALS
-// Keep testimonials: صفاء، أماني بخش، المها اليازيدي
+// Keep testimonials: ØµÙØ§Ø¡ØŒ Ø£Ù…Ø§Ù†ÙŠ Ø¨Ø®Ø´ØŒ Ø§Ù„Ù…Ù‡Ø§ Ø§Ù„ÙŠØ§Ø²ÙŠØ¯ÙŠ
 // ====================================================================
 
 model Review {
@@ -494,7 +494,7 @@ model Review {
 }
 
 // ====================================================================
-// SYSTEM — AuditLog / Notification / CmsContent
+// SYSTEM â€” AuditLog / Notification / CmsContent
 // ====================================================================
 
 model AuditLog {
@@ -539,7 +539,7 @@ model CmsContent {
 }
 
 // ====================================================================
-// USER SETTINGS — per-user JSON storage (one-to-one with User)
+// USER SETTINGS â€” per-user JSON storage (one-to-one with User)
 // Used by Settings pages (student/instructor/admin) to persist prefs.
 // Admin global settings use CmsContent table instead.
 // ====================================================================
@@ -553,7 +553,7 @@ model UserSettings {
 }
 
 // ====================================================================
-// COUPONS — discount codes for promotions
+// COUPONS â€” discount codes for promotions
 // ====================================================================
 
 model Coupon {
@@ -576,7 +576,7 @@ model Coupon {
 }
 
 // ====================================================================
-// SUPPORT TICKETS — student support system
+// SUPPORT TICKETS â€” student support system
 // ====================================================================
 
 model SupportTicket {
@@ -614,7 +614,7 @@ model TicketReply {
 }
 
 // ====================================================================
-// LESSON PROGRESS — per-lesson watching tracking
+// LESSON PROGRESS â€” per-lesson watching tracking
 // ====================================================================
 
 model LessonProgress {
@@ -635,7 +635,7 @@ model LessonProgress {
 }
 
 // ====================================================================
-// GUARDIAN — links a guardian to a minor student
+// GUARDIAN â€” links a guardian to a minor student
 // ====================================================================
 
 model GuardianLink {
@@ -654,7 +654,7 @@ model GuardianLink {
 }
 
 // ====================================================================
-// NEW — Gateway Payments (Moyasar / PayTabs ready) + Points
+// NEW â€” Gateway Payments (Moyasar / PayTabs ready) + Points
 // ====================================================================
 
 enum GatewayPaymentStatus {
@@ -676,7 +676,7 @@ model Payment {
   id         String               @id @default(cuid())
   userId     String
   courseId   String
-  amount     Int // بالهللة: 9900 = 99 ريال
+  amount     Int // Ø¨Ø§Ù„Ù‡Ù„Ù„Ø©: 9900 = 99 Ø±ÙŠØ§Ù„
   currency   String               @default("SAR")
   status     GatewayPaymentStatus @default(PENDING)
   provider   PaymentProvider      @default(MANUAL)
@@ -707,3 +707,6 @@ model PointTransaction {
   @@index([userId])
   @@index([createdAt])
 }
+
+
+

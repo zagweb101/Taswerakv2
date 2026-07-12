@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { db as prisma } from '@/lib/db';
 import { notFound } from 'next/navigation';
 
 export default async function VerifyPage({ params }: { params: { code: string } }) {
