@@ -16,7 +16,7 @@
 // ====================================================================
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth, signIn } from "@/auth";
+import { auth, signIn, createImpersonationToken } from "@/auth";
 import { db } from "@/lib/db";
 import { writeAudit } from "@/lib/services/audit";
 import { rateLimitPresets } from "@/lib/services/rate-limit";
@@ -83,11 +83,12 @@ export async function POST(
       userAgent: req.headers.get("user-agent") || undefined,
     });
 
-    // Issue new session via impersonation provider
-    // signIn() returns URL on success or throws on failure
+    // Generate a cryptographically signed impersonation token
+    const token = createImpersonationToken(target.id, session.user.id);
+
+    // Issue new session via impersonation provider with signed token
     await signIn("impersonation", {
-      targetUserId: target.id,
-      adminUserId: session.user.id,
+      token,
       redirect: false,
     });
 

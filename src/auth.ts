@@ -7,18 +7,29 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { db } from "@/lib/db";
 import { Role } from "@prisma/client";
 import { authConfig } from "@/auth.config";
 import { rateLimitPresets } from "@/lib/services/rate-limit";
 
 // ====================================================================
-// Impersonation credentials provider
-// Admin invokes signIn("impersonation", { targetUserId, adminToken })
-// where adminToken = the admin's current JWT (verified server-side).
-// The provider swaps the session to the target user, and adds
-// `impersonatedBy: adminId` claim so we can show a banner.
+// Impersonation credentials provider — SECURED with HMAC token
+// Admin invokes signIn("impersonation", { token })
+// where token = "targetUserId:adminUserId:timestamp:hmac"
+// generated server-side in the impersonate API route.
+// The provider validates the HMAC signature + 30s expiry before
+// swapping the session to the target user.
 // ====================================================================
+
+/** Generate a signed impersonation token (used by the admin API route). */
+export function createImpersonationToken(targetUserId: string, adminUserId: string): string {
+  const secret = process.env.AUTH_SECRET || "";
+  const ts = Date.now().toString();
+  const data = `${targetUserId}:${adminUserId}:${ts}`;
+  const hmac = crypto.createHmac("sha256", secret).update(data).digest("hex");
+  return `${data}:${hmac}`;
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -28,15 +39,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       id: "impersonation",
       name: "impersonation",
       credentials: {
-        targetUserId: { label: "Target User ID", type: "text" },
-        adminUserId: { label: "Admin User ID", type: "text" },
+        token: { label: "Impersonation Token", type: "text" },
       },
       authorize: async (creds) => {
-        // This provider is called by the impersonate API via signIn("impersonation", ...)
-        // The API has already verified the admin session + permissions before calling.
-        const targetUserId = creds?.targetUserId?.toString();
-        const adminUserId = creds?.adminUserId?.toString();
-        if (!targetUserId || !adminUserId) return null;
+        // Validate the cryptographically signed token
+        const token = creds?.token?.toString();
+        if (!token) return null;
+
+        const secret = process.env.AUTH_SECRET || "";
+        const parts = token.split(":");
+        if (parts.length !== 4) return null;
+        const [targetUserId, adminUserId, ts, hmac] = parts;
+
+        // Verify expiry (30 seconds)
+        const age = Date.now() - parseInt(ts, 10);
+        if (isNaN(age) || age < 0 || age > 30_000) return null;
+
+        // Verify HMAC signature
+        const data = `${targetUserId}:${adminUserId}:${ts}`;
+        const expectedHmac = crypto.createHmac("sha256", secret).update(data).digest("hex");
+        if (!crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(expectedHmac))) return null;
+
+        // Verify admin exists and is actually an ADMIN
+        const admin = await db.user.findUnique({
+          where: { id: adminUserId },
+          select: { role: true },
+        });
+        if (!admin || admin.role !== "ADMIN") return null;
 
         try {
           const target = await db.user.findUnique({
