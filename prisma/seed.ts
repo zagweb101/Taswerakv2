@@ -7,11 +7,15 @@
 //   3. Featured testimonials (صفاء، أماني بخش، المها اليازيدي)
 // ====================================================================
 
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, Role, CourseLevel, CourseStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL || "postgresql://postgres:123456@localhost:5432/taswerak?schema=public" });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Seeding Taswerak...");
@@ -334,4 +338,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });
