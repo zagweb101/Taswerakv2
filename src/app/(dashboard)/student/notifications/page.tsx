@@ -49,16 +49,11 @@ export default async function StudentNotificationsPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  let notifications: any[] = [];
-  try {
-    notifications = await db.notification.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    });
-  } catch {
-    notifications = mockNotifications;
-  }
+  const notifications = await db.notification.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
 
   const unread = notifications.filter((n) => !n.readAt);
 
