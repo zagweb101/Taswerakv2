@@ -104,6 +104,18 @@ export async function POST(req: NextRequest) {
 
     // Upload image
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Secure server-side validation against MIME spoofing
+    try {
+      const sharp = (await import("sharp")).default;
+      await sharp(buffer).metadata();
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "الملف المرفوع ليس صورة صالحة" },
+        { status: 400 }
+      );
+    }
+
     const objectKey = makeObjectKey("submissions", file.name || "submission.jpg");
     const { url: imageUrl, provider } = await uploadFile(buffer, objectKey, file.type);
 
