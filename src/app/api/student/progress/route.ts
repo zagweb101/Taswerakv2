@@ -64,20 +64,19 @@ export async function PATCH(req: NextRequest) {
     // Update lastLessonId
     const updateData: any = { lastLessonId: lessonId };
 
-    // If marked complete, recalculate progress
-    // (Simplified: progress = (current lesson index + 1) / total * 100)
+    // If marked complete, recalculate progress based on ACTUAL completed lessons
     if (completed && totalLessons > 0) {
-      // Find current lesson index
-      const allLessons: string[] = [];
-      enrollment.course.sections.forEach((s: any) => {
-        s.lessons.forEach((l: any) => allLessons.push(l.id));
+      // Count unique completed lessons from the database
+      const completedLessonsCount = await db.lessonProgress.count({
+        where: {
+          studentId: session.user.id,
+          courseId,
+          completedAt: { not: null },
+        },
       });
-      const currentIndex = allLessons.indexOf(lessonId);
-      if (currentIndex >= 0) {
-        updateData.progress = Math.min(100, Math.round(((currentIndex + 1) / totalLessons) * 100));
-        if (updateData.progress >= 100) {
-          updateData.completedAt = new Date();
-        }
+      updateData.progress = Math.min(100, Math.round((completedLessonsCount / totalLessons) * 100));
+      if (updateData.progress >= 100) {
+        updateData.completedAt = new Date();
       }
     }
 

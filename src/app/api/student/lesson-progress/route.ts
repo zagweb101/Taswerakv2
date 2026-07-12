@@ -28,6 +28,14 @@ export async function PATCH(req: NextRequest) {
 
     const { lessonId, courseId, watchedSeconds, completed } = parsed.data;
 
+    // Verify student is enrolled in this course
+    const enrollment = await db.enrollment.findUnique({
+      where: { studentId_courseId: { studentId: session.user.id, courseId } },
+    });
+    if (!enrollment || enrollment.status !== "ACTIVE") {
+      return NextResponse.json({ ok: false, error: "غير مسجّل في هذه الدورة" }, { status: 403 });
+    }
+
     const progress = await db.lessonProgress.upsert({
       where: { studentId_lessonId: { studentId: session.user.id, lessonId } },
       create: {
@@ -62,6 +70,17 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const courseId = searchParams.get("courseId");
     if (!courseId) return NextResponse.json({ ok: false, error: "courseId مطلوب" }, { status: 400 });
+
+    // Verify instructor owns this course (skip for admin)
+    if (session.user.role === "INSTRUCTOR") {
+      const course = await db.course.findUnique({
+        where: { id: courseId },
+        select: { instructorId: true },
+      });
+      if (!course || course.instructorId !== session.user.id) {
+        return NextResponse.json({ ok: false, error: "صلاحيات غير كافية" }, { status: 403 });
+      }
+    }
 
     const progress = await db.lessonProgress.findMany({
       where: { courseId },
