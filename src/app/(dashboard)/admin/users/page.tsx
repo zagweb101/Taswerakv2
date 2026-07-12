@@ -45,25 +45,18 @@ export default async function AdminUsersPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  let users: any[] = [];
-  let stats = { total: 0, students: 0, instructors: 0, banned: 0 };
-  try {
-    users = await db.user.findMany({
-      include: { _count: { select: { enrollments: true, coursesAsInstructor: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    });
-    const [total, students, instructors, banned] = await Promise.all([
-      db.user.count(),
-      db.user.count({ where: { role: "STUDENT" } }),
-      db.user.count({ where: { role: "INSTRUCTOR" } }),
-      db.user.count({ where: { isBanned: true } }),
-    ]);
-    stats = { total, students, instructors, banned };
-  } catch {
-    users = mockUsers;
-    stats = { total: 6, students: 4, instructors: 1, banned: 1 };
-  }
+  const users = await db.user.findMany({
+    include: { _count: { select: { enrollments: true, coursesAsInstructor: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+  const [total, students, instructors, banned] = await Promise.all([
+    db.user.count(),
+    db.user.count({ where: { role: "STUDENT" } }),
+    db.user.count({ where: { role: "INSTRUCTOR" } }),
+    db.user.count({ where: { isBanned: true } }),
+  ]);
+  const stats = { total, students, instructors, banned };
 
   return (
     <div className="space-y-6">
