@@ -46,6 +46,7 @@ export default async function CheckoutPage({ params }: PageProps) {
         category: true,
         durationHours: true,
         status: true,
+        isFree: true,
       },
     });
 
@@ -63,6 +64,26 @@ export default async function CheckoutPage({ params }: PageProps) {
       },
       select: { id: true, status: true },
     });
+
+    // Handle Free Course instant enrollment
+    if (course.isFree) {
+      if (!existingEnrollment) {
+        await db.enrollment.create({
+          data: {
+            studentId: session.user.id,
+            courseId: course.id,
+            status: "ACTIVE",
+            progress: 0,
+          },
+        });
+      } else if (existingEnrollment.status !== "ACTIVE") {
+        await db.enrollment.update({
+          where: { id: existingEnrollment.id },
+          data: { status: "ACTIVE" },
+        });
+      }
+      redirect("/student/courses");
+    }
 
     // Get bank details from CmsContent (admin settings)
     const bankRow = await db.cmsContent.findUnique({
@@ -83,6 +104,14 @@ export default async function CheckoutPage({ params }: PageProps) {
       };
     }
   } catch (err) {
+    // If it was a redirect, rethrow it so Next.js handles it properly
+    if (err instanceof Error && err.message === "NEXT_REDIRECT") {
+      throw err;
+    }
+    // Next.js redirect throws a special redirect error, check for it
+    if (err && (err as any).digest?.startsWith("NEXT_REDIRECT")) {
+      throw err;
+    }
     console.error("[checkout] DB error:", err);
     return (
       <div className="min-h-screen flex flex-col bg-background">

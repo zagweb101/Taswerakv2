@@ -15,8 +15,10 @@ const updateSchema = z.object({
   titleAr: z.string().max(120).optional().nullable(),
   description: z.string().min(10).max(2000).optional(),
   descriptionAr: z.string().max(2000).optional().nullable(),
-  price: z.number().min(0).optional(),
+  isFree: z.boolean().optional(),
+  price: z.number().min(0).optional().nullable(),
   discountPrice: z.number().min(0).optional().nullable(),
+  pointsPrice: z.number().min(0).optional().nullable(),
   currency: z.string().optional(),
   level: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED", "PROFESSIONAL"]).optional(),
   status: z.enum(["DRAFT", "PUBLISHED", "UNLISTED", "ARCHIVED"]).optional(),
@@ -71,7 +73,7 @@ export async function GET(
       ok: true,
       course: {
         ...course,
-        price: Number(course.price),
+        price: course.price ? Number(course.price) : null,
         discountPrice: course.discountPrice ? Number(course.discountPrice) : null,
       },
     });
@@ -104,7 +106,10 @@ export async function PATCH(
       );
     }
 
-    const existing = await db.course.findUnique({ where: { id }, select: { instructorId: true, status: true } });
+    const existing = await db.course.findUnique({
+      where: { id },
+      select: { instructorId: true, status: true, isFree: true, price: true }
+    });
     if (!existing) {
       return NextResponse.json({ ok: false, error: "الدورة غير موجودة" }, { status: 404 });
     }
@@ -112,13 +117,40 @@ export async function PATCH(
       return NextResponse.json({ ok: false, error: "غير مصرّح" }, { status: 403 });
     }
 
+    const isFree = parsed.data.isFree !== undefined ? parsed.data.isFree : existing.isFree;
+    const price = parsed.data.price !== undefined ? parsed.data.price : (existing.price ? Number(existing.price) : null);
+
+    if (!isFree && (price === null || price === undefined || price <= 0)) {
+      return NextResponse.json({ ok: false, error: "السعر مطلوب للدورات المدفوعة ويجب أن يكون أكبر من 0" }, { status: 400 });
+    }
+
     const data: any = { ...parsed.data };
+    if (isFree) {
+      data.price = null;
+      data.discountPrice = null;
+      data.pointsPrice = null;
+    } else {
+      if (data.price !== undefined) data.price = data.price || null;
+      if (data.discountPrice !== undefined) data.discountPrice = data.discountPrice || null;
+      if (data.pointsPrice !== undefined) data.pointsPrice = data.pointsPrice || null;
+    }
+
+    if (data.status !== undefined) {
+      if (data.status === "PUBLISHED" && session.user.role === "INSTRUCTOR") {
+        data.status = "PENDING_REVIEW";
+        data.submittedAt = new Date();
+        data.rejectionReason = null;
+      } else if (data.status === "PENDING_REVIEW") {
+        data.submittedAt = new Date();
+        data.rejectionReason = null;
+      }
+    }
+
     if (data.startDate !== undefined) data.startDate = data.startDate ? new Date(data.startDate) : null;
     if (data.endDate !== undefined) data.endDate = data.endDate ? new Date(data.endDate) : null;
     if (data.capacity !== undefined) data.capacity = data.capacity || null;
     if (data.thumbnailUrl !== undefined) data.thumbnailUrl = data.thumbnailUrl || null;
     if (data.previewVideoUrl !== undefined) data.previewVideoUrl = data.previewVideoUrl || null;
-    if (data.discountPrice !== undefined) data.discountPrice = data.discountPrice || null;
     if (data.titleAr !== undefined) data.titleAr = data.titleAr || null;
     if (data.descriptionAr !== undefined) data.descriptionAr = data.descriptionAr || null;
     if (data.category !== undefined) data.category = data.category || null;
@@ -141,7 +173,7 @@ export async function PATCH(
       ok: true,
       course: {
         ...updated,
-        price: Number(updated.price),
+        price: updated.price ? Number(updated.price) : null,
         discountPrice: updated.discountPrice ? Number(updated.discountPrice) : null,
       },
     });

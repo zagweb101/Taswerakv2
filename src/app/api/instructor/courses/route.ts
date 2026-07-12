@@ -14,8 +14,10 @@ const createSchema = z.object({
   titleAr: z.string().max(120).optional(),
   description: z.string().min(10, "الوصف مطلوب").max(2000),
   descriptionAr: z.string().max(2000).optional(),
-  price: z.number().min(0, "السعر مطلوب"),
+  isFree: z.boolean().default(false),
+  price: z.number().min(0, "السعر مطلوب").optional().nullable(),
   discountPrice: z.number().min(0).optional().nullable(),
+  pointsPrice: z.number().min(0).optional().nullable(),
   currency: z.string().default("SAR"),
   level: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED", "PROFESSIONAL"]).default("BEGINNER"),
   category: z.string().max(60).optional(),
@@ -25,6 +27,14 @@ const createSchema = z.object({
   endDate: z.string().optional().nullable(),
   thumbnailUrl: z.string().url().optional().nullable(),
   previewVideoUrl: z.string().url().optional().nullable(),
+}).refine((data) => {
+  if (!data.isFree && (data.price === undefined || data.price === null || data.price <= 0)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "السعر مطلوب للدورات المدفوعة ويجب أن يكون أكبر من 0",
+  path: ["price"]
 });
 
 export async function GET() {
@@ -49,7 +59,7 @@ export async function GET() {
       ok: true,
       courses: courses.map((c) => ({
         ...c,
-        price: Number(c.price),
+        price: c.price ? Number(c.price) : null,
         discountPrice: c.discountPrice ? Number(c.discountPrice) : null,
       })),
     });
@@ -93,6 +103,9 @@ export async function POST(req: NextRequest) {
     const course = await db.course.create({
       data: {
         ...data,
+        price: data.isFree ? null : (data.price || null),
+        discountPrice: data.isFree ? null : (data.discountPrice || null),
+        pointsPrice: data.isFree ? null : (data.pointsPrice || null),
         slug,
         instructorId: session.user.id,
         status: "DRAFT",
@@ -102,7 +115,6 @@ export async function POST(req: NextRequest) {
         capacity: data.capacity || null,
         thumbnailUrl: data.thumbnailUrl || null,
         previewVideoUrl: data.previewVideoUrl || null,
-        discountPrice: data.discountPrice || null,
       },
     });
 

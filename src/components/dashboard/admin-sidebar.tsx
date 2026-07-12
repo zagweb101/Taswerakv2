@@ -9,12 +9,14 @@ import {
   Ticket,
   MessageSquare,
   Bell,
+  BookOpen,
 } from "lucide-react";
 import type { NavItem } from "@/components/dashboard/dashboard-shell";
 
 export const adminNav: NavItem[] = [
   { href: "/admin", label: "المؤشرات", icon: <LayoutDashboard className="h-4 w-4" /> },
   { href: "/admin/users", label: "المستخدمون", icon: <Users className="h-4 w-4" /> },
+  { href: "/admin/courses/pending", label: "مراجعة الدورات", icon: <BookOpen className="h-4 w-4" /> },
   { href: "/admin/finance", label: "المالية", icon: <Wallet className="h-4 w-4" /> },
   { href: "/admin/coupons", label: "الكوبونات", icon: <Ticket className="h-4 w-4" /> },
   { href: "/admin/cms", label: "إدارة المحتوى", icon: <FileText className="h-4 w-4" /> },

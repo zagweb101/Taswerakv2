@@ -15,6 +15,7 @@ interface Course {
   descriptionAr: string | null;
   description: string;
   price: any;
+  isFree?: boolean;
   durationHours: number;
   level: string;
   category: string | null;
@@ -145,10 +146,18 @@ export function CourseList({ courses }: { courses: Course[] }) {
 
                   <div className="flex items-center justify-between pt-3 border-t border-border/40 mt-3">
                     <div>
-                      <span className="text-2xl font-extrabold brand-gradient-text">
-                        {Number(course.price).toLocaleString("ar-SA")}
-                      </span>
-                      <span className="text-sm text-muted-foreground mr-1">ر.س</span>
+                      {course.isFree ? (
+                        <span className="text-xl font-bold text-emerald-600">
+                          مجاناً
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-2xl font-extrabold brand-gradient-text">
+                            {Number(course.price).toLocaleString("ar-SA")}
+                          </span>
+                          <span className="text-sm text-muted-foreground mr-1">ر.س</span>
+                        </>
+                      )}
                     </div>
                     <Link href={`/courses/${course.slug}`}>
                       <Button

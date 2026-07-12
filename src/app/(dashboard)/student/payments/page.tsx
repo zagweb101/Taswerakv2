@@ -80,7 +80,10 @@ export default async function StudentPaymentsPage() {
       <DashboardPageHeader
         title="إيصالات الدفع"
         description="ارفع إيصالات التحويل البنكي وتابع حالة اعتمادها"
-        actions={<UploadReceiptDialog courses={availableCourses} />}
+        actions={<UploadReceiptDialog courses={availableCourses.map((c) => ({
+          ...c,
+          price: c.price ? Number(c.price) : 0,
+        }))} />}
       />
 
       {/* Stats */}

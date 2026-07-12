@@ -179,11 +179,19 @@ export default async function CourseDetailPage({
         instructor: { select: { id: true, name: true, bio: true } },
       },
     });
-  } catch {
-    // DB unavailable — use fallback
+  } catch (err) {
+    console.error("[course details] DB error:", err);
   }
 
   const fallback = fallbackCourses[slug];
+
+  if (dbCourse && dbCourse.status !== "PUBLISHED") {
+    const isInstructor = session?.user?.id && dbCourse.instructorId === session.user.id;
+    const isAdmin = session?.user?.role === "ADMIN";
+    if (!isInstructor && !isAdmin) {
+      notFound();
+    }
+  }
 
   if (!dbCourse && !fallback) {
     notFound();
@@ -245,6 +253,13 @@ export default async function CourseDetailPage({
       return {
         href: "/student/payments",
         label: "ارفع إيصال الدفع",
+        variant: "default" as const,
+      };
+    }
+    if (dbCourse?.isFree) {
+      return {
+        href: `/student/checkout/${dbCourse?.id || ""}`,
+        label: "سجّل مجاناً وابدأ التعلم",
         variant: "default" as const,
       };
     }
@@ -337,10 +352,18 @@ export default async function CourseDetailPage({
                   </div>
                   <div className="p-5 space-y-4">
                     <div>
-                      <span className="text-4xl font-extrabold brand-gradient-text">
-                        {price.toLocaleString("ar-SA")}
-                      </span>
-                      <span className="text-base text-muted-foreground mr-1.5">ر.س</span>
+                      {dbCourse?.isFree ? (
+                        <span className="text-3xl font-extrabold text-emerald-600">
+                          مجاناً
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-4xl font-extrabold brand-gradient-text">
+                            {price.toLocaleString("ar-SA")}
+                          </span>
+                          <span className="text-base text-muted-foreground mr-1.5">ر.س</span>
+                        </>
+                      )}
                     </div>
 
                     <Link href={enrollmentCta.href}>

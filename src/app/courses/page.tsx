@@ -36,6 +36,7 @@ export default async function CoursesPage() {
         descriptionAr: true,
         description: true,
         price: true,
+        isFree: true,
         durationHours: true,
         level: true,
         category: true,

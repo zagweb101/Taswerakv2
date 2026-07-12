@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -59,8 +60,10 @@ interface CourseData {
   titleAr: string | null;
   description: string;
   descriptionAr: string | null;
+  isFree?: boolean;
   price: number;
   discountPrice: number | null;
+  pointsPrice?: number | null;
   currency: string;
   level: string;
   status: string;
@@ -69,6 +72,7 @@ interface CourseData {
   thumbnailUrl: string | null;
   previewVideoUrl: string | null;
   isFeatured: boolean;
+  rejectionReason?: string | null;
   sections?: Section[];
 }
 
@@ -82,14 +86,16 @@ interface Props {
 export function CourseEditor({ mode, courseId, initialData, instructorId }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [course, setCourse] = useState<CourseData>(
-    initialData || {
+  const [course, setCourse] = useState<CourseData>({
+    ...(initialData || {
       title: "",
       titleAr: "",
       description: "",
       descriptionAr: "",
+      isFree: false,
       price: 499,
       discountPrice: null,
+      pointsPrice: null,
       currency: "SAR",
       level: "BEGINNER",
       status: "DRAFT",
@@ -98,9 +104,13 @@ export function CourseEditor({ mode, courseId, initialData, instructorId }: Prop
       thumbnailUrl: null,
       previewVideoUrl: null,
       isFeatured: false,
+      rejectionReason: null,
       sections: [],
-    }
-  );
+    }),
+    isFree: initialData?.isFree ?? false,
+    pointsPrice: initialData?.pointsPrice ?? null,
+    rejectionReason: initialData?.rejectionReason ?? null,
+  });
   const [sections, setSections] = useState<Section[]>(initialData?.sections || []);
 
   // ── Course metadata save ──────────────────────────────────────
@@ -123,8 +133,10 @@ export function CourseEditor({ mode, courseId, initialData, instructorId }: Prop
           titleAr: course.titleAr?.trim() || null,
           description: course.description?.trim() || "",
           descriptionAr: course.descriptionAr?.trim() || null,
-          price: Number(course.price) || 0,
-          discountPrice: course.discountPrice ? Number(course.discountPrice) : null,
+          isFree: course.isFree || false,
+          price: course.isFree ? null : (Number(course.price) || 0),
+          discountPrice: course.isFree ? null : (course.discountPrice ? Number(course.discountPrice) : null),
+          pointsPrice: course.isFree ? null : (course.pointsPrice ? Number(course.pointsPrice) : null),
           currency: course.currency,
           level: course.level,
           category: course.category?.trim() || null,
@@ -142,8 +154,8 @@ export function CourseEditor({ mode, courseId, initialData, instructorId }: Prop
           toast.error("الوصف مطلوب (10 أحرف على الأقل)");
           return;
         }
-        if (payload.price < 0) {
-          toast.error("السعر يجب أن يكون صفر أو أكثر");
+        if (!payload.isFree && (payload.price === null || payload.price === undefined || payload.price <= 0)) {
+          toast.error("السعر مطلوب للدورات المدفوعة ويجب أن يكون أكبر من 0");
           return;
         }
 
@@ -333,26 +345,41 @@ export function CourseEditor({ mode, courseId, initialData, instructorId }: Prop
                 className="rounded-xl min-h-[80px]"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="price">السعر (ر.س) *</Label>
-              <Input
-                id="price"
-                type="number"
-                value={course.price}
-                onChange={(e) => setCourse({ ...course, price: Number(e.target.value) })}
-                className="rounded-xl"
+            <div className="space-y-2 sm:col-span-2 flex items-center justify-between p-4 rounded-2xl bg-muted/40 border border-border/60">
+              <div className="space-y-0.5">
+                <Label className="text-base font-semibold">الدورة مجانية</Label>
+                <div className="text-xs text-muted-foreground">تتيح للطلاب التسجيل والبدء فوراً دون دفع مالي</div>
+              </div>
+              <Switch
+                checked={course.isFree}
+                onCheckedChange={(checked) => setCourse({ ...course, isFree: checked })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="discount">سعر مخفّض (اختياري)</Label>
-              <Input
-                id="discount"
-                type="number"
-                value={course.discountPrice || ""}
-                onChange={(e) => setCourse({ ...course, discountPrice: e.target.value ? Number(e.target.value) : null })}
-                className="rounded-xl"
-              />
-            </div>
+
+            {!course.isFree && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="price">السعر (ر.س) *</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    value={course.price}
+                    onChange={(e) => setCourse({ ...course, price: Number(e.target.value) })}
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="discount">سعر مخفّض (اختياري)</Label>
+                  <Input
+                    id="discount"
+                    type="number"
+                    value={course.discountPrice || ""}
+                    onChange={(e) => setCourse({ ...course, discountPrice: e.target.value ? Number(e.target.value) : null })}
+                    className="rounded-xl"
+                  />
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <Label>المستوى</Label>
               <Select value={course.level} onValueChange={(v) => setCourse({ ...course, level: v })}>
@@ -400,30 +427,42 @@ export function CourseEditor({ mode, courseId, initialData, instructorId }: Prop
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-3 flex-wrap">
-              <Badge className={
-                course.status === "PUBLISHED" ? "bg-emerald-100 text-emerald-700" :
-                course.status === "DRAFT" ? "bg-zinc-100 text-zinc-700" :
-                course.status === "ARCHIVED" ? "bg-red-100 text-red-700" :
-                "bg-amber-100 text-amber-700"
-              }>
-                {course.status === "PUBLISHED" ? "منشور" : course.status === "DRAFT" ? "مسودة" : course.status === "ARCHIVED" ? "مؤرشف" : "غير مُدرج"}
-              </Badge>
-              <div className="flex gap-2">
-                {course.status !== "PUBLISHED" && (
-                  <Button size="sm" onClick={() => changeStatus("PUBLISHED")} disabled={pending} className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white">
-                    <Eye className="h-3.5 w-3.5 ml-1" /> نشر
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <Badge className={
+                  course.status === "PUBLISHED" ? "bg-emerald-100 text-emerald-700" :
+                  course.status === "PENDING_REVIEW" ? "bg-amber-100 text-amber-700" :
+                  course.status === "REJECTED" ? "bg-rose-100 text-rose-700" :
+                  course.status === "DRAFT" ? "bg-zinc-100 text-zinc-700" :
+                  "bg-amber-100 text-amber-700"
+                }>
+                  {course.status === "PUBLISHED" ? "منشورة" : 
+                   course.status === "PENDING_REVIEW" ? "قيد المراجعة" : 
+                   course.status === "REJECTED" ? "مرفوضة" : 
+                   course.status === "DRAFT" ? "مسودة" : "غير معروفة"}
+                </Badge>
+                <div className="flex gap-2">
+                  {(course.status === "DRAFT" || course.status === "REJECTED") && (
+                    <Button size="sm" onClick={() => changeStatus("PUBLISHED")} disabled={pending} className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white">
+                      <Eye className="h-3.5 w-3.5 ml-1" /> تقديم للمراجعة
+                    </Button>
+                  )}
+                  {course.status === "PUBLISHED" && (
+                    <Button size="sm" variant="outline" onClick={() => changeStatus("UNLISTED")} disabled={pending} className="rounded-xl">
+                      <EyeOff className="h-3.5 w-3.5 ml-1" /> إلغاء النشر
+                    </Button>
+                  )}
+                  <Button size="sm" variant="outline" onClick={() => changeStatus("ARCHIVED")} disabled={pending} className="rounded-xl border-red-300 text-red-600 hover:bg-red-50">
+                    أرشفة
                   </Button>
-                )}
-                {course.status === "PUBLISHED" && (
-                  <Button size="sm" variant="outline" onClick={() => changeStatus("UNLISTED")} disabled={pending} className="rounded-xl">
-                    <EyeOff className="h-3.5 w-3.5 ml-1" /> إخفاء
-                  </Button>
-                )}
-                <Button size="sm" variant="outline" onClick={() => changeStatus("ARCHIVED")} disabled={pending} className="rounded-xl border-red-300 text-red-600 hover:bg-red-50">
-                  <Archive className="h-3.5 w-3.5 ml-1" /> أرشفة
-                </Button>
+                </div>
               </div>
+
+              {course.status === "REJECTED" && course.rejectionReason && (
+                <div className="p-3 rounded-xl bg-rose-50 text-rose-800 text-sm border border-rose-100">
+                  <strong>سبب الرفض:</strong> {course.rejectionReason}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

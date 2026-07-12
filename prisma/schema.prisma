@@ -32,7 +32,9 @@ enum CourseLevel {
 
 enum CourseStatus {
   DRAFT
+  PENDING_REVIEW
   PUBLISHED
+  REJECTED
   UNLISTED
   ARCHIVED
 }
@@ -42,6 +44,28 @@ enum LessonType {
   TEXT
   PDF
   LIVE
+  ARTICLE
+  QUIZ
+  ASSIGNMENT
+  RESOURCE
+}
+
+enum VideoType {
+  UPLOAD
+  YOUTUBE
+  VIMEO
+  EMBED
+  MINIO
+}
+
+enum LessonContentType {
+  VIDEO
+  TEXT
+  PDF
+  AUDIO
+  LIVE
+  QUIZ
+  ASSIGNMENT
 }
 
 enum EnrollmentStatus {
@@ -190,12 +214,18 @@ model Course {
   descriptionAr   String?      @db.Text
   thumbnailUrl    String?
   previewVideoUrl String?
-  price           Decimal      @db.Decimal(10, 2)
+  isFree          Boolean      @default(false)
+  price           Decimal?     @db.Decimal(10, 2)
   discountPrice   Decimal?     @db.Decimal(10, 2)
+  pointsPrice     Int?
   currency        String       @default("SAR")
   level           CourseLevel  @default(BEGINNER)
   status          CourseStatus @default(DRAFT)
   isFeatured      Boolean      @default(false)
+  rejectionReason String?      @db.Text
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  reviewedById    String?
   category        String?
   language        String       @default("ar")
   durationHours   Int          @default(0)
@@ -253,6 +283,7 @@ model Lesson {
   order        Int        @default(0)
   isPreview    Boolean    @default(false)
   isPublished  Boolean    @default(true)
+  settings     Json?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
