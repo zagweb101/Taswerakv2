@@ -86,16 +86,11 @@ export default async function InstructorCoursesPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  let courses: any[] = [];
-  try {
-    courses = await db.course.findMany({
-      where: { instructorId: session.user.id },
-      include: { _count: { select: { enrollments: true } } },
-      orderBy: { createdAt: "desc" },
-    });
-  } catch {
-    courses = mockCourses;
-  }
+  const courses = await db.course.findMany({
+    where: { instructorId: session.user.id },
+    include: { _count: { select: { enrollments: true } } },
+    orderBy: { createdAt: "desc" },
+  });
 
   const published = courses.filter((c) => c.status === "PUBLISHED");
   const drafts = courses.filter((c) => c.status === "DRAFT");
