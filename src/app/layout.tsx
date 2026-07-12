@@ -8,6 +8,10 @@ import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import { ChatbotWidget } from "@/components/chatbot/chatbot-widget";
+import { initSentry } from "@/lib/services/sentry";
+
+// Initialize Sentry error tracking for both server and client side
+initSentry().catch((err) => console.warn("[sentry] initialization failed:", err));
 
 const cairo = Cairo({
   variable: "--font-cairo",
