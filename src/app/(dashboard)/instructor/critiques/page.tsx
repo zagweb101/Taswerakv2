@@ -57,21 +57,16 @@ export default async function InstructorCritiquesPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  let submissions: any[] = [];
-  try {
-    submissions = await db.submission.findMany({
-      where: { assignment: { course: { instructorId: session.user.id } } },
-      include: {
-        assignment: {
-          select: { title: true, course: { select: { titleAr: true, title: true } } },
-        },
-        student: { select: { id: true, name: true } },
+  const submissions = await db.submission.findMany({
+    where: { assignment: { course: { instructorId: session.user.id } } },
+    include: {
+      assignment: {
+        select: { title: true, course: { select: { titleAr: true, title: true } } },
       },
-      orderBy: { submittedAt: "desc" },
-    });
-  } catch {
-    submissions = mockSubmissions;
-  }
+      student: { select: { id: true, name: true } },
+    },
+    orderBy: { submittedAt: "desc" },
+  });
 
   const submitted = submissions.filter((s) => s.status === "SUBMITTED" || s.status === "UNDER_REVIEW");
   const critiqued = submissions.filter((s) => s.status === "CRITIQUED" || s.status === "APPROVED");
